@@ -84,6 +84,7 @@ name "G1 Vocabulary").
          Words given this type are grouped into one question; if fewer than 3 are left,
          unscored filler pairs are added. A word is wrong if it was ever mismatched.
        - *Odd one out*: 4 words, 3 share a part of speech; tap the different one (the target).
+         Instructions name the kinds: "(noun, verb, adjective or adverb)".
        Multi-word entries are skipped for the spelling types; audio types need speech support.
      Each word gets one randomly chosen type among the checked types it supports.
 4. **Order** — *In order* (library order) or *Shuffle*.
@@ -120,6 +121,24 @@ name "G1 Vocabulary").
     reusable motion primitives: across, hop, bob, rise, fall, flutter, pop, grow...) in
     `src/index.css`. Animals moving across the screen move right-to-left because Apple's
     emoji face left. Hidden when the user prefers reduced motion.
+
+## Blankie Bear (被被熊) — reward for a perfect quiz
+When a quiz ends at **100%**, Blankie Bear appears on the result screen: a bear head (white,
+blue ears, small grumpy face) on a blue-and-white striped blanket, redrawn as clean SVG in the
+style of the owner's sketch (thick dark outlines, colored-pencil hatching on the blue).
+- Flies around the screen until the result screen is left (wander toward random targets,
+  gentle bob, tilts with motion). Enters by shooting up from the bottom.
+- The blanket ripples while flying: its stripes are recomputed every frame from a wave phase,
+  trail behind horizontal motion and hang longer when flying up (`bear/blanket.ts`).
+- Sounds: chime on arrival, soft whoosh ~every 1.2 s (louder when faster), occasional "wheee".
+- Can be dragged (pointer events; works with touch). While dragged it blushes and keeps making
+  cute squeak / boop / giggle sounds; on release it is flung with the drag's momentum.
+- **Must not slow page load**: `Result.tsx` loads it with `React.lazy` only on a perfect score,
+  so it is a separate ~3 KB (gzip) chunk. Animation writes SVG attributes / transforms directly
+  in `requestAnimationFrame` (no React re-render per frame).
+- Files: `src/components/bear/` (`BlankieBear.tsx`, `blanket.ts`, `bearSounds.ts`); audio
+  helpers shared with the celebrations live in `src/lib/audio.ts`.
+- Reduced motion: stays in place (still draggable), slow ripple, no flying sounds.
 
 ## All words page (`words.html`)
 Standalone second Vite entry (`src/words.tsx` -> `src/components/AllWords.tsx`): one

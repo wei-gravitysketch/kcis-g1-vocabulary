@@ -75,7 +75,7 @@ function Prompt({ q, answered }: { q: ChoiceQuestion; answered: boolean }) {
       return (
         <Card>
           <p className="text-2xl font-bold text-slate-800">Which word is different?</p>
-          <Ask>Three words are the same kind of word. One is not.</Ask>
+          <Ask>Three words are the same kind of word (noun, verb, adjective or adverb). One is not.</Ask>
         </Card>
       )
   }

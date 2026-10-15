@@ -1,5 +1,9 @@
+import { lazy, Suspense } from 'react'
 import type { AnswerResult } from '../lib/session'
 import Shell, { BigButton } from './Shell'
+
+// Loaded only when needed (a perfect score), in its own small chunk.
+const BlankieBear = lazy(() => import('./bear/BlankieBear'))
 
 export default function Result({
   results,
@@ -49,6 +53,12 @@ export default function Result({
             ))}
           </div>
         </div>
+      )}
+
+      {percent === 100 && (
+        <Suspense fallback={null}>
+          <BlankieBear />
+        </Suspense>
       )}
     </Shell>
   )

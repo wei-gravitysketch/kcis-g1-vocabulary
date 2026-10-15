@@ -1,31 +1,54 @@
 import { useEffect, useRef, type PointerEvent } from 'react'
 import { bearAppear, bearSqueak, bearWheee, bearWhoosh } from './bearSounds'
-import { blanket, STRIPES } from './blanket'
+import { BANDS, EDGE, HEAD, NECK, OUTLINE, STRIPE_LINES, VIEWBOX, toPath, type Deform } from './bearShape'
 
-// 被被熊 Blankie Bear: a bear head on a blue-and-white striped blanket.
-// Shown on the result screen after a perfect quiz. It flies around until the screen is
-// left, its blanket ripples as it flies, and it can be dragged (squeaking all the while).
-// Loaded lazily (React.lazy) so it never slows down the first page load.
+// 被被熊 Blankie Bear: the owner's drawing of a bear head on a blue-and-white striped blanket,
+// traced as clean SVG (bearShape.ts). Shown on the result screen after a perfect quiz. It
+// flies around until the screen is left, its blanket ripples as it flies, and it can be
+// dragged (squeaking all the while). Loaded lazily (React.lazy) so it never slows down the
+// first page load. The animation writes SVG attributes directly: no React re-render per frame.
 
-const BLUE = '#95b2f2'
-const BLUE_LINE = '#7d9de9'
-const INK = '#22262f'
+const INK = '#1f2433'
+const WHITE = '#fffefb'
 const SPEED = 150 // px per second when cruising
 const MAX_FLING = 900
+const ASPECT = VIEWBOX.h / VIEWBOX.w
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+const widthFor = (screenW: number) => clamp(screenW * 0.32, 190, 300)
+
+/**
+ * Cloth ripple: points move more the farther they are from the neck (the blanket hangs from
+ * there), trail behind horizontal motion (`sway`), hang lower when flying up (`stretch`),
+ * and follow a travelling wave (`phase`, `amp`). All in viewBox units.
+ */
+function makeDeform(phase: number, amp: number, sway: number, stretch: number): Deform {
+  return (x, y) => {
+    if (y < 300) return [x, y]
+    const k = Math.min(1, Math.hypot(x - NECK[0], (y - NECK[1]) * 1.2) / 450) ** 1.5
+    return [
+      x + k * (sway + amp * Math.sin(phase + x * 0.012 + y * 0.008)),
+      y + k * (stretch + amp * 0.7 * Math.cos(phase * 1.1 + x * 0.01 - y * 0.006)),
+    ]
+  }
+}
+
+const REST = makeDeform(0, 0, 0, 0)
 
 export default function BlankieBear() {
   const wrapRef = useRef<HTMLDivElement>(null)
-  const stripeRefs = useRef<(SVGPathElement | null)[]>([])
+  const clipRef = useRef<SVGPathElement>(null)
+  const baseRef = useRef<SVGPathElement>(null)
+  const bandRefs = useRef<(SVGPathElement | null)[]>([])
   const lineRefs = useRef<(SVGPathElement | null)[]>([])
-  const hemRef = useRef<SVGPathElement>(null)
+  const edgeRef = useRef<SVGPathElement>(null)
   const headRef = useRef<SVGGElement>(null)
   const blushRef = useRef<SVGGElement>(null)
 
   // Mutable simulation state, read and written by the animation loop and pointer handlers.
   const sim = useRef({
-    size: 180,
+    w: 240,
+    h: 240 * ASPECT,
     x: 0,
     y: 0,
     vx: 0,
@@ -41,27 +64,27 @@ export default function BlankieBear() {
     nextSqueak: 0,
   })
 
-  const initial = blanket(0, 4, 0, 0)
-
   useEffect(() => {
     const s = sim.current
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-    s.size = clamp(window.innerWidth * 0.24, 140, 210)
-    // Enter from below the screen, heading for the middle.
-    s.x = window.innerWidth / 2
-    s.y = reduced ? window.innerHeight * 0.6 : window.innerHeight + s.size
+    const resize = () => {
+      s.w = widthFor(window.innerWidth)
+      s.h = s.w * ASPECT
+      if (wrapRef.current) wrapRef.current.style.width = `${s.w}px`
+    }
+    resize()
     const newTarget = () => {
-      const m = s.size * 0.6
-      s.tx = m + Math.random() * Math.max(1, window.innerWidth - 2 * m)
-      s.ty = m + Math.random() * Math.max(1, window.innerHeight - 2 * m)
+      const mx = s.w * 0.55
+      const my = s.h * 0.6
+      s.tx = mx + Math.random() * Math.max(1, window.innerWidth - 2 * mx)
+      s.ty = my + Math.random() * Math.max(1, window.innerHeight - 2 * my)
     }
-    s.tx = window.innerWidth / 2
-    s.ty = window.innerHeight / 2
-    s.vy = reduced ? 0 : -700 // shoot up into view, then ease into cruising speed
-    if (reduced) {
-      s.tx = s.x
-      s.ty = s.y
-    }
+    // Enter from below the screen, shooting up toward the middle, then cruise.
+    s.x = window.innerWidth / 2
+    s.y = reduced ? window.innerHeight * 0.6 : window.innerHeight + s.h
+    s.tx = reduced ? s.x : window.innerWidth / 2
+    s.ty = reduced ? s.y : window.innerHeight / 2
+    s.vy = reduced ? 0 : -700
 
     const appearTimer = setTimeout(bearAppear, 250)
     let phase = 0
@@ -75,8 +98,6 @@ export default function BlankieBear() {
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
       time += dt
-      const w = window.innerWidth
-      const h = window.innerHeight
 
       let mvx: number
       let mvy: number
@@ -101,13 +122,12 @@ export default function BlankieBear() {
           s.vy += ((dy / (dist || 1)) * SPEED - s.vy) * k
           s.x += s.vx * dt
           s.y += s.vy * dt
-          // Stay on screen (after a fling or a resize).
-          const m = s.size * 0.4
-          if (s.x < m || s.x > w - m || s.y < m || s.y > h - m) {
-            if (s.y < h + s.size * 0.5) {
-              s.x = clamp(s.x, m, w - m)
-              s.y = clamp(s.y, m, h - m + s.size)
-            }
+          // Stay on screen after a fling (but let the entrance come in from below).
+          const mx = s.w * 0.35
+          const my = s.h * 0.35
+          if (s.y < window.innerHeight + s.h * 0.5) {
+            s.x = clamp(s.x, mx, window.innerWidth - mx)
+            s.y = clamp(s.y, my, window.innerHeight - my + s.h)
           }
         }
         mvx = s.vx
@@ -125,31 +145,35 @@ export default function BlankieBear() {
 
       const speed = Math.hypot(mvx, mvy)
       phase += dt * (reduced ? 1.5 : 3 + speed / 80)
-      const amp = 4 + Math.min(8, speed / 60)
-      const sway = clamp(-mvx * 0.05, -28, 28)
-      const stretch = clamp(-mvy * 0.03, -8, 14)
-      const shape = blanket(phase, amp, sway, stretch)
-      shape.stripes.forEach((d, i) => stripeRefs.current[i]?.setAttribute('d', d))
-      shape.lines.forEach((d, i) => lineRefs.current[i]?.setAttribute('d', d))
-      hemRef.current?.setAttribute('d', shape.hem)
-      headRef.current?.setAttribute('transform', `rotate(${(Math.sin(phase * 0.5) * 4 - sway * 0.15).toFixed(2)} 121 118)`)
+      const deform = makeDeform(
+        phase,
+        8 + Math.min(22, speed / 25),
+        clamp(-mvx * 0.12, -70, 70),
+        clamp(-mvy * 0.08, -25, 40),
+      )
+      const outline = toPath(OUTLINE, deform)
+      clipRef.current?.setAttribute('d', outline)
+      baseRef.current?.setAttribute('d', outline)
+      BANDS.forEach((b, i) => bandRefs.current[i]?.setAttribute('d', toPath(b, deform)))
+      STRIPE_LINES.forEach((l, i) => lineRefs.current[i]?.setAttribute('d', toPath(l, deform)))
+      edgeRef.current?.setAttribute('d', toPath(EDGE, deform))
+      const headTilt = Math.sin(phase * 0.5) * 3 - clamp(mvx * 0.01, -6, 6)
+      headRef.current?.setAttribute('transform', `rotate(${headTilt.toFixed(2)} ${NECK[0]} ${NECK[1]})`)
 
       const bob = s.dragging || reduced ? 0 : Math.sin(time * 2.2) * 6
-      const tilt = clamp(mvx / 25, -14, 14)
+      const tilt = clamp(mvx / 25, -12, 12)
       if (wrapRef.current) {
-        wrapRef.current.style.transform = `translate3d(${(s.x - s.size / 2).toFixed(1)}px, ${(s.y - s.size / 2 + bob).toFixed(1)}px, 0) rotate(${tilt.toFixed(1)}deg)`
+        wrapRef.current.style.transform = `translate3d(${(s.x - s.w / 2).toFixed(1)}px, ${(s.y - s.h / 2 + bob).toFixed(1)}px, 0) rotate(${tilt.toFixed(1)}deg)`
       }
       raf = requestAnimationFrame(frame)
     }
     raf = requestAnimationFrame(frame)
 
     const onResize = () => {
-      s.size = clamp(window.innerWidth * 0.24, 140, 210)
-      if (wrapRef.current) wrapRef.current.style.width = `${s.size}px`
+      resize()
       newTarget()
     }
     window.addEventListener('resize', onResize)
-    if (wrapRef.current) wrapRef.current.style.width = `${s.size}px`
 
     return () => {
       cancelAnimationFrame(raf)
@@ -196,11 +220,15 @@ export default function BlankieBear() {
     // Fling: keep the throw's momentum, then fly on to a new spot.
     s.vx = clamp(s.dragVX, -MAX_FLING, MAX_FLING)
     s.vy = clamp(s.dragVY, -MAX_FLING, MAX_FLING)
-    const m = s.size * 0.6
-    s.tx = m + Math.random() * Math.max(1, window.innerWidth - 2 * m)
-    s.ty = m + Math.random() * Math.max(1, window.innerHeight - 2 * m)
+    const mx = s.w * 0.55
+    const my = s.h * 0.6
+    s.tx = mx + Math.random() * Math.max(1, window.innerWidth - 2 * mx)
+    s.ty = my + Math.random() * Math.max(1, window.innerHeight - 2 * my)
     blushRef.current?.setAttribute('opacity', '0')
   }
+
+  const outline = toPath(OUTLINE, REST)
+  const { x, y, w, h } = VIEWBOX
 
   return (
     <div
@@ -212,62 +240,82 @@ export default function BlankieBear() {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       className="fixed top-0 left-0 z-40 cursor-grab touch-none select-none active:cursor-grabbing"
-      style={{ width: 180, transform: 'translate3d(-400px, -400px, 0)', willChange: 'transform' }}
+      style={{ width: 240, transform: 'translate3d(-600px, -600px, 0)', willChange: 'transform' }}
     >
-      <svg viewBox="0 0 240 240" className="block h-auto w-full overflow-visible drop-shadow-md">
+      <svg viewBox={`${x} ${y} ${w} ${h}`} className="block h-auto w-full overflow-visible drop-shadow-md">
         <defs>
-          {/* Colored-pencil look: light blue with darker diagonal hatching. */}
-          <pattern id="bb-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
-            <rect width="5" height="5" fill={BLUE} />
-            <line x1="0" y1="0" x2="0" y2="5" stroke={BLUE_LINE} strokeWidth="1.3" />
+          {/* Colored-pencil blue like the drawing: soft base, uneven strokes leaning right. */}
+          <pattern id="bb-pencil" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(25)">
+            <rect width="30" height="30" fill="#aac1f6" />
+            <g strokeLinecap="round">
+              <path d="M3,-2 V32" stroke="#95b0f1" strokeWidth="2.4" opacity="0.8" />
+              <path d="M9,4 V26" stroke="#c3d3fa" strokeWidth="2" />
+              <path d="M14,-2 V17 M14,22 V32" stroke="#8ea9ef" strokeWidth="2.2" opacity="0.75" />
+              <path d="M20,-2 V32" stroke="#b6c9f8" strokeWidth="2.6" />
+              <path d="M25,6 V30" stroke="#93aef0" strokeWidth="2" opacity="0.8" />
+            </g>
           </pattern>
+          <pattern id="bb-pencil-ear" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(25)">
+            <rect width="30" height="30" fill="#97b2f2" />
+            <g strokeLinecap="round">
+              <path d="M3,-2 V32" stroke="#829fec" strokeWidth="2.4" opacity="0.85" />
+              <path d="M9,4 V26" stroke="#b0c4f7" strokeWidth="2" />
+              <path d="M14,-2 V17 M14,22 V32" stroke="#7c9ae9" strokeWidth="2.2" opacity="0.8" />
+              <path d="M20,-2 V32" stroke="#a6bdf5" strokeWidth="2.6" />
+              <path d="M25,6 V30" stroke="#859fec" strokeWidth="2" opacity="0.85" />
+            </g>
+          </pattern>
+          <clipPath id="bb-clip">
+            <path ref={clipRef} d={outline} />
+          </clipPath>
         </defs>
 
         {/* Blanket */}
-        <g strokeLinecap="round" strokeLinejoin="round">
-          {initial.stripes.map((d, i) => (
+        <path ref={baseRef} d={outline} fill={WHITE} />
+        <g clipPath="url(#bb-clip)">
+          {BANDS.map((b, i) => (
             <path
               key={i}
               ref={(el) => {
-                stripeRefs.current[i] = el
+                bandRefs.current[i] = el
               }}
-              d={d}
-              fill={i % 2 === 0 ? 'url(#bb-hatch)' : '#fdfdff'}
+              d={toPath(b, REST)}
+              fill="url(#bb-pencil)"
             />
           ))}
-          {initial.lines.map((d, i) => (
+        </g>
+        <g fill="none" stroke={INK} strokeLinecap="round" strokeLinejoin="round">
+          {STRIPE_LINES.map((l, i) => (
             <path
               key={i}
               ref={(el) => {
                 lineRefs.current[i] = el
               }}
-              d={d}
-              fill="none"
-              stroke={INK}
-              strokeWidth={i === 0 || i === STRIPES ? 4 : 3}
+              d={toPath(l, REST)}
+              strokeWidth="8"
             />
           ))}
-          <path ref={hemRef} d={initial.hem} fill="none" stroke={INK} strokeWidth="4" />
+          <path ref={edgeRef} d={toPath(EDGE, REST)} strokeWidth="6" />
         </g>
 
         {/* Head */}
         <g ref={headRef} stroke={INK} strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="76" cy="42" r="19" fill="url(#bb-hatch)" strokeWidth="3.5" />
-          <circle cx="166" cy="42" r="19" fill="url(#bb-hatch)" strokeWidth="3.5" />
-          <path
-            d="M68,78 C68,46 92,30 121,30 C152,30 174,47 174,77 C174,106 152,124 121,124 C90,124 68,108 68,78 Z"
-            fill="#ffffff"
-            strokeWidth="3.5"
-          />
-          <g ref={blushRef} opacity="0" stroke="none" fill="#f9a8c0" style={{ transition: 'opacity 0.2s' }}>
-            <ellipse cx="93" cy="92" rx="9" ry="5" />
-            <ellipse cx="150" cy="90" rx="9" ry="5" />
+          <path d={HEAD.leftEarFill} fill="url(#bb-pencil-ear)" stroke="none" />
+          <path d={HEAD.rightEarFill} fill="url(#bb-pencil-ear)" stroke="none" />
+          <path d={HEAD.leftEarLine} fill="none" strokeWidth="7" />
+          <path d={HEAD.rightEarLine} fill="none" strokeWidth="7" />
+          <path d={HEAD.fill} fill={WHITE} stroke="none" />
+          <path d={HEAD.line} fill="none" strokeWidth="7" />
+          <g ref={blushRef} opacity="0" stroke="none" fill="#f7a8c0" style={{ transition: 'opacity 0.2s' }}>
+            <ellipse cx="328" cy="252" rx="24" ry="13" />
+            <ellipse cx="530" cy="238" rx="24" ry="13" />
           </g>
-          <ellipse cx="103" cy="70" rx="4.2" ry="3.6" fill={INK} stroke="none" />
-          <ellipse cx="140" cy="68" rx="5.4" ry="2.8" fill={INK} stroke="none" transform="rotate(-6 140 68)" />
-          <path d="M115,84 L128,82 L122,91 Z" fill="#ffffff" strokeWidth="2.6" />
-          <path d="M122,91 L121,99" fill="none" strokeWidth="2.6" />
-          <path d="M106,110 C109,101 115,98 121,99 C127,99 132,101 136,106" fill="none" strokeWidth="3" />
+          <ellipse cx="370" cy="203" rx="13" ry="6.5" transform="rotate(-24 370 203)" fill={INK} stroke="none" />
+          <ellipse cx="465" cy="190" rx="14" ry="5.5" transform="rotate(5 465 190)" fill={INK} stroke="none" />
+          <path d={HEAD.nose} fill={WHITE} strokeWidth="5" />
+          <path d={HEAD.noseLine} fill="none" strokeWidth="5" />
+          <path d={HEAD.mouthLeft} fill="none" strokeWidth="6.5" />
+          <path d={HEAD.mouthRight} fill="none" strokeWidth="4" />
         </g>
       </svg>
     </div>

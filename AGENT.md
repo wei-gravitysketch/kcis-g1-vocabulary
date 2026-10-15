@@ -127,19 +127,25 @@ name "G1 Vocabulary").
 
 ## Blankie Bear (被被熊) — reward for a perfect quiz
 When a quiz ends at **100%**, Blankie Bear appears on the result screen: a bear head (white,
-blue ears, small grumpy face) on a blue-and-white striped blanket, redrawn as clean SVG in the
-style of the owner's sketch (thick dark outlines, colored-pencil hatching on the blue).
+blue ears, small grumpy face) on a blue-and-white striped blanket. It must look **exactly like
+the owner's drawing**: `bear/bearShape.ts` is a tracing of that drawing in its own pixel space
+(head, ears, face, the 3-cornered blanket, the 7 stripe lines that stop short of the edges, and
+the blue bands where they were colored), fitted to the original ink to within ~1-2 px. Only the
+line quality (clean round strokes) and coloring (soft colored-pencil pattern leaning right, like
+the original strokes) are improved. Do not restyle the shapes.
 - Flies around the screen until the result screen is left (wander toward random targets,
   gentle bob, tilts with motion). Enters by shooting up from the bottom.
-- The blanket ripples while flying: its stripes are recomputed every frame from a wave phase,
-  trail behind horizontal motion and hang longer when flying up (`bear/blanket.ts`).
+- The blanket ripples while flying: every blanket point is displaced per frame (more the
+  farther from the neck), trailing behind horizontal motion, hanging lower when flying up, plus
+  a travelling wave (`makeDeform` in `BlankieBear.tsx`). At rest it is the exact tracing. Blue
+  bands are oversized shapes clipped by the deformed blanket outline.
 - Sounds: chime on arrival, soft whoosh ~every 1.2 s (louder when faster), occasional "wheee".
 - Can be dragged (pointer events; works with touch). While dragged it blushes and keeps making
   cute squeak / boop / giggle sounds; on release it is flung with the drag's momentum.
 - **Must not slow page load**: `Result.tsx` loads it with `React.lazy` only on a perfect score,
   so it is a separate ~3 KB (gzip) chunk. Animation writes SVG attributes / transforms directly
   in `requestAnimationFrame` (no React re-render per frame).
-- Files: `src/components/bear/` (`BlankieBear.tsx`, `blanket.ts`, `bearSounds.ts`); audio
+- Files: `src/components/bear/` (`BlankieBear.tsx`, `bearShape.ts`, `bearSounds.ts`); audio
   helpers shared with the celebrations live in `src/lib/audio.ts`.
 - Reduced motion: stays in place (still draggable), slow ripple, no flying sounds.
 

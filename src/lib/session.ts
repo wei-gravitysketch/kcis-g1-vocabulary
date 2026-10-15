@@ -181,7 +181,7 @@ function oddOneOutQuestion(word: string): ChoiceQuestion {
   return { kind: 'choice', type: 'oddOneOut', word, answer: word, options: shuffle([word, ...same]) }
 }
 
-function spellQuestion(word: string, type: SpellQuestion['type']): SpellQuestion {
+export function spellQuestion(word: string, type: SpellQuestion['type']): SpellQuestion {
   const letters = word.toLowerCase().split('')
   if (type === 'spell') {
     const decoys = Array.from({ length: 3 }, () => 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)])

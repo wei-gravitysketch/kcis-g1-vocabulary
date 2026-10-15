@@ -41,8 +41,8 @@ Three-level hierarchy; the **names of every level are free-form strings**:
   the bank can be extended freely (more sentences per word are fine). Avoid putting
   "a/an" directly before the target word when avoidable (it leaks/contradicts the
   answer), and make the sentence have a clear single answer.
-- `src/data/pictures.ts` — `Record<string, string>` (word -> one emoji). Only words that one
-  picture shows clearly; others are never asked with a picture. Emoji must be unique.
+- `src/data/pictures.ts` — `Record<string, string>` (word -> one emoji), used by the Picture and
+  True-or-false questions (not flashcards). Only words that one picture shows clearly; others are never asked with a picture. Emoji must be unique.
 - `scripts/validate-data.ts` (`npm run validate`) enforces: every vocabulary word has
   >= 10 unique sentences that contain the word; POS values are valid; ids unique; picture
   words exist and pictures are unique.
@@ -94,9 +94,12 @@ name "G1 Vocabulary").
 ## Session behavior
 - Words = union of the selected groups, de-duplicated. **Each word appears exactly once**;
   the session walks through the whole set.
-- **Flashcards**: big word card (with its picture, if any) and the speak button right beside the word, tap to reveal
-  part of speech + an example sentence, Previous / Next, progress bar, finish screen with
-  Again / Home.
+- **Flashcards**: big word card with the speak button right beside the word (no picture:
+  it gives away too much), tap to reveal part of speech + an example sentence, Previous /
+  Next, progress bar, finish screen with Again / Home. Under the card a small
+  **✏️ Spelling challenge** link swaps the card for an Unscramble of that word (single-word
+  entries only): same celebration/oops scenes as the quiz, *Try again* reshuffles,
+  *Back to card* returns. Not scored; moving to another card leaves the challenge.
 - **Quiz**: one question per word (a Match question covers several words), progress
   indicator, immediate right/wrong feedback (show the correct answer). The Next button sits
   directly under the question, right-aligned (not pinned to the bottom). Views:

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { vocabulary } from '../data/vocabulary'
+import { vocabulary, type WordGroup } from '../data/vocabulary'
+import WordListDialog from './WordListDialog'
 import { collectWords, countQuestions, type QuestionType, type SessionConfig } from '../lib/session'
 
 const STORAGE_KEY = 'vocab-settings-v1'
@@ -115,6 +116,7 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
   const { termId, groupIds, mode, types, order } = settings
   const term = vocabulary.find((t) => t.id === termId) ?? vocabulary[0]
   const set = (patch: Partial<SessionConfig>) => setSettings((s) => ({ ...s, ...patch }))
+  const [viewing, setViewing] = useState<WordGroup | null>(null)
 
   // Drop selected groups that do not belong to the current term (e.g. library changed).
   const validGroupIds = useMemo(
@@ -138,14 +140,15 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
   const toggleType = (t: QuestionType) => set({ types: types.includes(t) ? types.filter((x) => x !== t) : [...types, t] })
 
   let problem = ''
-  if (validGroupIds.length === 0) problem = 'Pick at least one list.'
+  if (validGroupIds.length === 0) problem = 'Pick at least one word list.'
   else if (mode === 'quiz' && types.length === 0) problem = 'Pick at least one question type.'
   else if (total === 0) problem = 'No words match this question type.'
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col gap-4 px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(8rem,calc(env(safe-area-inset-bottom)+7rem))]">
       <header className="py-2 text-center">
-        <h1 className="text-3xl font-extrabold text-sky-700">Word Cards</h1>
+        <p className="text-sm font-bold tracking-widest text-sky-500 uppercase">KCIS Grade 1</p>
+        <h1 className="text-3xl font-extrabold text-sky-700 sm:text-4xl">Vocabulary Practice</h1>
         <p className="mt-1 text-slate-500">Pick your words and start!</p>
       </header>
 
@@ -165,7 +168,7 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
 
       <Section
         step="2"
-        title="Lists"
+        title="Word List"
         action={
           <button
             type="button"
@@ -182,21 +185,42 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
           {term.groups.map((g) => {
             const on = validGroupIds.includes(g.id)
             return (
-              <button
+              <div
                 key={g.id}
-                type="button"
-                role="checkbox"
-                aria-checked={on}
-                onClick={() => toggleGroup(g.id)}
-                className={`flex min-h-16 flex-col justify-center rounded-2xl border-2 px-4 py-2 text-left transition ${
+                className={`flex min-h-16 items-center rounded-2xl border-2 transition ${
                   on ? 'border-sky-500 bg-sky-50' : 'border-slate-200 bg-white'
                 }`}
               >
-                <span className="font-semibold text-slate-800">{g.name}</span>
-                <span className="text-sm text-slate-500">{g.words.length} words</span>
-              </button>
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={on}
+                  onClick={() => toggleGroup(g.id)}
+                  className="flex min-h-16 flex-1 flex-col justify-center px-4 py-2 text-left"
+                >
+                  <span className="font-semibold text-slate-800">{g.name}</span>
+                  <span className="text-sm text-slate-500">{g.words.length} words</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewing(g)}
+                  className="mr-2 min-h-10 shrink-0 rounded-xl bg-white px-3 text-sm font-semibold text-sky-700 ring-1 ring-slate-200 active:bg-sky-50"
+                >
+                  See words
+                </button>
+              </div>
             )
           })}
+        </div>
+        <div className="mt-3 flex justify-end">
+          <a
+            href={`${import.meta.env.BASE_URL}words.html`}
+            target="_blank"
+            rel="noopener"
+            className="rounded-lg px-2 py-1 text-sm font-semibold text-slate-500 underline-offset-2 hover:underline active:bg-slate-100"
+          >
+            All words table ↗
+          </a>
         </div>
       </Section>
 
@@ -250,6 +274,8 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
           </button>
         </div>
       </div>
+
+      {viewing && <WordListDialog group={viewing} onClose={() => setViewing(null)} />}
     </div>
   )
 }

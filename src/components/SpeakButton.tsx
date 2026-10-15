@@ -1,6 +1,19 @@
 import { canSpeak, speak } from '../lib/speak'
 
-export default function SpeakButton({ text, label = 'Listen' }: { text: string; label?: string }) {
+const SIZES = {
+  sm: 'size-10 text-lg',
+  md: 'size-12 text-xl',
+}
+
+export default function SpeakButton({
+  text,
+  label = 'Listen',
+  size = 'md',
+}: {
+  text: string
+  label?: string
+  size?: keyof typeof SIZES
+}) {
   if (!canSpeak) return null
   return (
     <button
@@ -10,7 +23,7 @@ export default function SpeakButton({ text, label = 'Listen' }: { text: string; 
         e.stopPropagation()
         speak(text)
       }}
-      className="grid size-14 shrink-0 place-items-center rounded-full bg-sky-100 text-2xl text-sky-700 active:bg-sky-200"
+      className={`grid shrink-0 place-items-center rounded-full bg-sky-100 text-sky-700 active:bg-sky-200 ${SIZES[size]}`}
     >
       🔊
     </button>

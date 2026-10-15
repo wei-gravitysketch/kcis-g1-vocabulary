@@ -64,8 +64,10 @@ export default function Flashcards({
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setRevealed((r) => !r)}
         className="flex min-h-[22rem] cursor-pointer flex-col items-center justify-center gap-6 rounded-[2rem] bg-white p-6 text-center shadow-md ring-1 ring-slate-200 select-none"
       >
-        <div className="text-5xl leading-tight font-extrabold break-words text-sky-700 sm:text-7xl">{word}</div>
-        <SpeakButton text={word} label={`Listen to ${word}`} />
+        <div className="flex items-center justify-center gap-3">
+          <span className="text-5xl leading-tight font-extrabold break-words text-sky-700 sm:text-7xl">{word}</span>
+          <SpeakButton text={word} label={`Listen to ${word}`} />
+        </div>
         {revealed ? (
           <div className="flex flex-col items-center gap-2">
             {pos && (

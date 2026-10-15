@@ -51,9 +51,14 @@ Term 2: Week 11, 12, 13, My Words to Know (Week 14), Week 15, 16, 17, My Words t
 "My Words to Know" groups are always named `My Words to Know (Week N)`, N being the week they cover.
 
 ## Home screen (settings)
+Header: small kicker "KCIS Grade 1" + title "Vocabulary Practice" (home-screen app name "G1 Vocabulary").
+
 1. **Term** — dropdown, single select (Term 1, Term 2, ...).
-2. **Groups** — after a term is chosen, show its groups as multi-select toggle chips
-   (with Select all / Clear). At least one must be selected.
+2. **Word List** — after a term is chosen, show its groups as multi-select toggle chips
+   (with Select all / Clear). At least one must be selected. Each chip has a small
+   **See words** button on its right that opens a dialog listing that group's words (with
+   speak buttons). Below the chips, right-aligned, a small **All words table ↗** link opens
+   `words.html` in a new tab.
 3. **Mode** (choose one):
    - **Flashcards** — just show the cards.
    - **Quiz** — mixture of question types; checkboxes (at least one):
@@ -70,17 +75,38 @@ Term 2: Week 11, 12, 13, My Words to Know (Week 14), Week 15, 16, 17, My Words t
 ## Session behavior
 - Words = union of the selected groups, de-duplicated. **Each word appears exactly once**;
   the session walks through the whole set.
-- **Flashcards**: big word card, tap to reveal part of speech + an example sentence,
-  speak-aloud button (Web Speech API, optional), Previous / Next, progress bar, finish
-  screen with Again / Home.
+- **Flashcards**: big word card with the speak button right beside the word, tap to reveal
+  part of speech + an example sentence, Previous / Next, progress bar, finish screen with
+  Again / Home.
 - **Quiz**: one question per word, progress indicator, tap an option -> immediate
-  right/wrong feedback (show the correct answer), then Next. Final **result screen**
-  shows score, accuracy %, the missed words, and buttons: *Retry missed words*, *Home*.
+  right/wrong feedback (show the correct answer). The Next button sits directly under the
+  options, right-aligned (not pinned to the bottom). Part-of-speech questions show the speak
+  button beside the word. Final **result screen** shows score, accuracy %, the missed words,
+  and buttons: *Retry missed words*, *Home*.
+- **Celebration** on every correct answer: a ~2.5 s non-blocking full-screen animation picked
+  at random (never the same twice in a row) with a matching sound effect:
+  fireworks, rocket launch, whale jumping out of the water, balloons, rainbow + stars.
+  Animations: `src/components/Celebration.tsx` + `cel-*` keyframes in `src/index.css`.
+  Sounds: synthesized with the Web Audio API in `src/lib/celebrations.ts` (no audio files).
+  Hidden when the user prefers reduced motion.
+
+## All words page (`words.html`)
+Standalone second Vite entry (`src/words.tsx` -> `src/components/AllWords.tsx`): one table per
+term, rows grouped by word list, with part of speech and a speak button. Generated from the
+same data files.
+
+## Speech
+`src/lib/speak.ts` uses the browser's built-in Web Speech API (free, offline, no key). It picks
+the most natural en-US voice available on the device (prefers Premium/Enhanced voices and
+names like Ava, Samantha; never Apple novelty voices). Voice quality depends on the device:
+on iPad, downloading an enhanced voice under Settings > Accessibility > Spoken Content > Voices
+improves it.
 
 ## PWA / Add to Home Screen
 `public/manifest.webmanifest`, `apple-touch-icon.png` and icons in `public/`, iOS meta tags
 in `index.html` (standalone display, status bar style, app title). Use `%BASE_URL%`-relative
-paths so it works under the GitHub Pages sub-path. No service worker in v1 (online use).
+paths so it works under the GitHub Pages sub-path. No service worker in v1 (online use). Two HTML entries: `index.html`, `words.html`
+(see `vite.config.ts` `build.rollupOptions.input`).
 
 ## Conventions
 - Shared types live next to their data/logic (`Term`/`WordGroup` in `vocabulary.ts`, `PartOfSpeech` in

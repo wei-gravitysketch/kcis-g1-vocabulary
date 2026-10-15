@@ -3,6 +3,8 @@ import { POS_LABELS, type PartOfSpeech } from '../data/partsOfSpeech'
 import type { AnswerResult, Question } from '../lib/session'
 import Shell, { BigButton } from './Shell'
 import SpeakButton from './SpeakButton'
+import Celebration from './Celebration'
+import { pickCelebration, playCelebrationSound, type CelebrationKind } from '../lib/celebrations'
 
 export default function Quiz({
   questions,
@@ -16,6 +18,7 @@ export default function Quiz({
   const [index, setIndex] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const [results, setResults] = useState<AnswerResult[]>([])
+  const [celebration, setCelebration] = useState<{ kind: CelebrationKind; id: number } | null>(null)
 
   const q = questions[index]
   const answered = picked !== null
@@ -25,6 +28,11 @@ export default function Quiz({
     if (answered) return
     setPicked(option)
     setResults((r) => [...r, { word: q.word, correct: option === q.answer }])
+    if (option === q.answer) {
+      const kind = pickCelebration(celebration?.kind)
+      setCelebration({ kind, id: Date.now() })
+      playCelebrationSound(kind)
+    }
   }
 
   const next = () => {
@@ -60,12 +68,13 @@ export default function Quiz({
         ) : (
           <div className="flex flex-col items-center gap-3">
             <p className="text-slate-500">What kind of word is this?</p>
-            <p className="text-5xl font-extrabold break-words text-sky-700">{q.word}</p>
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-5xl font-extrabold break-words text-sky-700">{q.word}</span>
+              <SpeakButton text={q.word} label={`Listen to ${q.word}`} />
+            </div>
           </div>
         )}
-        {(q.kind === 'pos' || answered) && (
-          <SpeakButton text={q.kind === 'pos' ? q.word : q.sentence} label="Listen" />
-        )}
+        {q.kind === 'blank' && answered && <SpeakButton text={q.sentence} label="Listen to the sentence" />}
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -92,6 +101,10 @@ export default function Quiz({
           </div>
         )}
       </div>
+
+      {celebration && (
+        <Celebration key={celebration.id} kind={celebration.kind} onDone={() => setCelebration(null)} />
+      )}
     </Shell>
   )
 }

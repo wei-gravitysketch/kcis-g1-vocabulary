@@ -1,6 +1,6 @@
 {
-  "name": "Word Cards",
-  "short_name": "Word Cards",
+  "name": "KCIS Grade 1 Vocabulary Practice",
+  "short_name": "G1 Vocabulary",
   "description": "Vocabulary flashcards and quizzes for Grade 1",
   "start_url": "./",
   "scope": "./",

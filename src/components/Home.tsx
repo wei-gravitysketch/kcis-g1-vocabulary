@@ -1,22 +1,29 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { vocabulary, type WordGroup } from '../data/vocabulary'
 import WordListDialog from './WordListDialog'
-import { collectWords, countQuestions, type QuestionType, type SessionConfig } from '../lib/session'
+import { primeAudio } from '../lib/celebrations'
+import { DEFAULT_TYPES, LEVELS, QUESTION_TYPES } from '../lib/questionTypes'
+import { collectWords, countAskable, type QuestionType, type SessionConfig } from '../lib/session'
+import { primeSpeech } from '../lib/speak'
 
-const STORAGE_KEY = 'vocab-settings-v1'
+// v2: question types changed (Basic/Advanced); older saved settings are ignored.
+const STORAGE_KEY = 'vocab-settings-v2'
 
 const defaults: SessionConfig = {
   termId: vocabulary[0].id,
   groupIds: [],
   mode: 'flashcards',
-  types: ['blank', 'pos'],
+  types: DEFAULT_TYPES,
   order: 'sequential',
 }
 
 function loadSettings(): SessionConfig {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as Partial<SessionConfig> | null
-    if (saved && vocabulary.some((t) => t.id === saved.termId)) return { ...defaults, ...saved }
+    if (saved && vocabulary.some((t) => t.id === saved.termId)) {
+      const types = (saved.types ?? defaults.types).filter((t) => QUESTION_TYPES.some((q) => q.id === t))
+      return { ...defaults, ...saved, types }
+    }
   } catch {
     // ignore: storage unavailable or corrupt
   }
@@ -133,7 +140,7 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
   }, [settings])
 
   const words = useMemo(() => collectWords(termId, validGroupIds), [termId, validGroupIds])
-  const total = mode === 'flashcards' ? words.length : countQuestions(words, types)
+  const total = mode === 'flashcards' ? words.length : countAskable(words, types)
 
   const toggleGroup = (id: string) =>
     set({ groupIds: validGroupIds.includes(id) ? validGroupIds.filter((g) => g !== id) : [...validGroupIds, id] })
@@ -149,7 +156,6 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
       <header className="py-2 text-center">
         <p className="text-sm font-bold tracking-widest text-sky-500 uppercase">KCIS Grade 1</p>
         <h1 className="text-3xl font-extrabold text-sky-700 sm:text-4xl">Vocabulary Practice</h1>
-        <p className="mt-1 text-slate-500">Pick your words and start!</p>
       </header>
 
       <Section step="1" title="Term">
@@ -248,19 +254,38 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
           ]}
         />
         {mode === 'quiz' && (
-          <div className="mt-3 flex flex-col gap-2">
-            <Check
-              checked={types.includes('blank')}
-              onChange={() => toggleType('blank')}
-              title="Fill in the blank"
-              hint="Choose the word that completes the sentence"
-            />
-            <Check
-              checked={types.includes('pos')}
-              onChange={() => toggleType('pos')}
-              title="Part of speech"
-              hint="Noun, verb, adjective or adverb?"
-            />
+          <div className="mt-4 flex flex-col gap-4">
+            {LEVELS.map((level) => {
+              const ids = QUESTION_TYPES.filter((t) => t.level === level.id).map((t) => t.id)
+              const all = ids.every((id) => types.includes(id))
+              return (
+                <div key={level.id}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-base font-bold tracking-wide text-slate-500 uppercase">{level.title}</h3>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        set({ types: all ? types.filter((t) => !ids.includes(t)) : [...new Set([...types, ...ids])] })
+                      }
+                      className="min-h-10 rounded-xl px-3 text-sm font-semibold text-sky-700 active:bg-sky-50"
+                    >
+                      {all ? 'Clear' : 'Select all'}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {QUESTION_TYPES.filter((t) => t.level === level.id).map((t) => (
+                      <Check
+                        key={t.id}
+                        checked={types.includes(t.id)}
+                        onChange={() => toggleType(t.id)}
+                        title={t.title}
+                        hint={t.hint}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
       </Section>
@@ -281,10 +306,15 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
           <button
             type="button"
             disabled={Boolean(problem)}
-            onClick={() => onStart({ termId, groupIds: validGroupIds, mode, types, order })}
+            onClick={() => {
+              // Unlock audio and speech on iOS while we are inside a tap.
+              primeAudio()
+              primeSpeech()
+              onStart({ termId, groupIds: validGroupIds, mode, types, order })
+            }}
             className="min-h-16 w-full rounded-2xl bg-sky-600 text-xl font-bold text-white shadow-lg transition active:bg-sky-700 disabled:bg-slate-300 disabled:shadow-none"
           >
-            {problem || `Start · ${total} ${mode === 'quiz' ? 'questions' : 'cards'}`}
+            {problem || `Start · ${total} ${mode === 'quiz' ? 'words' : 'cards'}`}
           </button>
         </div>
       </div>

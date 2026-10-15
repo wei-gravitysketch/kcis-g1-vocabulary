@@ -2,6 +2,7 @@
 import { vocabulary } from '../src/data/vocabulary'
 import { partsOfSpeech } from '../src/data/partsOfSpeech'
 import { sentences } from '../src/data/sentences'
+import { pictures } from '../src/data/pictures'
 
 const MIN_SENTENCES = 10
 const VALID_POS = new Set<string>(['noun', 'verb', 'adj', 'adv'])
@@ -39,6 +40,14 @@ for (const [word, pos] of Object.entries(partsOfSpeech)) {
   if (!words.has(word)) errors.push(`partsOfSpeech: "${word}" is not in the vocabulary`)
   if (!VALID_POS.has(pos)) errors.push(`partsOfSpeech: "${word}" has invalid value "${pos}"`)
 }
+const seenPictures = new Map<string, string>()
+for (const [word, emoji] of Object.entries(pictures)) {
+  if (!words.has(word)) errors.push(`pictures: "${word}" is not in the vocabulary`)
+  const other = seenPictures.get(emoji)
+  if (other) errors.push(`pictures: "${word}" and "${other}" share the same picture ${emoji}`)
+  seenPictures.set(emoji, word)
+}
+
 for (const word of Object.keys(sentences)) {
   if (!words.has(word)) errors.push(`sentences: "${word}" is not in the vocabulary`)
 }
@@ -47,4 +56,6 @@ if (errors.length) {
   console.error(errors.join('\n'))
   process.exit(1)
 }
-console.log(`OK: ${words.size} words, ${Object.keys(partsOfSpeech).length} with part of speech`)
+console.log(
+  `OK: ${words.size} words, ${Object.keys(partsOfSpeech).length} with part of speech, ${Object.keys(pictures).length} with a picture`,
+)

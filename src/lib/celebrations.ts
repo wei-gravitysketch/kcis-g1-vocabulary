@@ -1,5 +1,5 @@
 // Scenes shown after an answer (celebrations for correct, "oops" for wrong), their sound
-// effects, and the praise phrases spoken on a correct answer.
+// effects, and the praise phrases shown (not spoken) on a correct answer.
 // Sounds are synthesized with the Web Audio API (no audio files, works offline).
 
 export const CELEBRATIONS = [
@@ -285,4 +285,21 @@ const SOUNDS: Record<SceneKind, (c: AudioContext) => void> = {
 export function playSceneSound(kind: SceneKind): void {
   const c = audio()
   if (c) SOUNDS[kind](c)
+}
+
+/** Unlock Web Audio on iOS; call inside a tap handler (e.g. Start). */
+export function primeAudio(): void {
+  audio()
+}
+
+/** Short feedback for each pair in a matching question. */
+export function playPairSound(correct: boolean): void {
+  const c = audio()
+  if (!c) return
+  if (correct) {
+    tone(c, { from: E5, start: 0, dur: 0.15, gain: 0.1, type: 'triangle' })
+    tone(c, { from: C6, start: 0.1, dur: 0.25, gain: 0.1, type: 'triangle' })
+  } else {
+    tone(c, { from: 220, to: 160, start: 0, dur: 0.25, gain: 0.1, type: 'triangle', vib: [20, 15] })
+  }
 }

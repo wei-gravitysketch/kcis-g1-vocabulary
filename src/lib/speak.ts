@@ -60,3 +60,14 @@ export function speak(text: string): void {
   utterance.pitch = 1
   window.speechSynthesis.speak(utterance)
 }
+
+/**
+ * iOS only lets speech start from a tap. Call this inside a tap handler (e.g. Start) so later
+ * automatic speech (listening questions) is allowed.
+ */
+export function primeSpeech(): void {
+  if (!canSpeak) return
+  const u = new SpeechSynthesisUtterance(' ')
+  u.volume = 0
+  window.speechSynthesis.speak(u)
+}

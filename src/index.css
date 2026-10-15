@@ -276,3 +276,10 @@ button:disabled {
 @media (prefers-reduced-motion: reduce) {
   .cel-root { display: none; }
 }
+
+.anim-shake { animation: anim-shake 0.4s ease-in-out; }
+@keyframes anim-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { POS_LABELS, partsOfSpeech } from '../data/partsOfSpeech'
+import { pictures } from '../data/pictures'
 import { randomSentence } from '../lib/session'
 import Shell, { BigButton } from './Shell'
 import SpeakButton from './SpeakButton'
@@ -64,6 +65,7 @@ export default function Flashcards({
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setRevealed((r) => !r)}
         className="flex min-h-[22rem] cursor-pointer flex-col items-center justify-center gap-6 rounded-[2rem] bg-white p-6 text-center shadow-md ring-1 ring-slate-200 select-none"
       >
+        {pictures[word] && <span className="text-7xl leading-none">{pictures[word]}</span>}
         <div className="flex items-center justify-center gap-3">
           <span className="text-5xl leading-tight font-extrabold break-words text-sky-700 sm:text-7xl">{word}</span>
           <SpeakButton text={word} label={`Listen to ${word}`} />

@@ -3,6 +3,7 @@ import { canSpeak, speak } from '../lib/speak'
 const SIZES = {
   sm: 'size-10 text-lg',
   md: 'size-12 text-xl',
+  lg: 'size-24 text-5xl',
 }
 
 export default function SpeakButton({

@@ -41,9 +41,12 @@ Three-level hierarchy; the **names of every level are free-form strings**:
   the bank can be extended freely (more sentences per word are fine). Avoid putting
   "a/an" directly before the target word when avoidable (it leaks/contradicts the
   answer), and make the sentence have a clear single answer.
+- `src/data/pictures.ts` — `Record<string, string>` (word -> one emoji). Only words that one
+  picture shows clearly; others are never asked with a picture. Emoji must be unique.
 - `scripts/validate-data.ts` (`npm run validate`) enforces: every vocabulary word has
-  >= 10 unique sentences that contain the word; POS values are valid; ids unique.
-  When adding vocabulary, add its sentences + POS and run validate.
+  >= 10 unique sentences that contain the word; POS values are valid; ids unique; picture
+  words exist and pictures are unique.
+  When adding vocabulary, add its sentences + POS (+ picture if it fits) and run validate.
 
 ### Current library
 Term 1: Week 1, 2, 3, My Words to Know (Week 4), Week 5, 6, 7, My Words to Know (Week 8).
@@ -51,7 +54,8 @@ Term 2: Week 11, 12, 13, My Words to Know (Week 14), Week 15, 16, 17, My Words t
 "My Words to Know" groups are always named `My Words to Know (Week N)`, N being the week they cover.
 
 ## Home screen (settings)
-Header: small kicker "KCIS Grade 1" + title "Vocabulary Practice" (home-screen app name "G1 Vocabulary").
+Header: small kicker "KCIS Grade 1" + title "Vocabulary Practice" (no subtitle; home-screen app
+name "G1 Vocabulary").
 
 1. **Term** — dropdown, single select (Term 1, Term 2, ...). Native arrow hidden; a large
    chevron icon with comfortable right padding is drawn instead.
@@ -62,13 +66,26 @@ Header: small kicker "KCIS Grade 1" + title "Vocabulary Practice" (home-screen a
    `words.html` in a new tab.
 3. **Mode** (choose one):
    - **Flashcards** — just show the cards.
-   - **Quiz** — mixture of question types; checkboxes (at least one):
-     - *Fill in the blank*: a sentence with the target word blanked out + 4 options
-       (1 correct, 3 distractors picked at random from the whole vocabulary library,
-       distinct from the answer). The sentence is picked at random from the word's bank.
-     - *Part of speech*: show a word, choose noun / verb / adj / adv. Only words that
-       have an entry in `partsOfSpeech.ts` are eligible.
-     If both are checked, each word gets one randomly chosen applicable type.
+   - **Quiz** — mixture of question types, as checkboxes grouped by level, each level with
+     Select all / Clear. At least one type. **Default: all Basic types.** (Registry with
+     titles/hints/levels: `src/lib/questionTypes.ts`.)
+     - **Basic** (listen / look, little reading)
+       - *Listen and choose*: the word is read aloud (auto + 🔊 button); tap it among 4 words.
+       - *Picture*: an emoji picture; tap its word among 4. Only words in `pictures.ts`.
+       - *True or false*: picture variant ("Is this “X”?") or listen variant ("Did you hear
+         this word?"); answer 👍 Yes / 👎 No; 50% true.
+       - *Fill in the blank*: a sentence with the word blanked + 4 options (distractors never
+         appear in the sentence). Sentence picked at random from the bank.
+     - **Advanced** (grammar, spelling, more reading)
+       - *Part of speech*: noun / verb / adjective / adverb. Only words in `partsOfSpeech.ts`.
+       - *Unscramble*: the word's letters as shuffled tiles (🔊 hint); tap in order, ⌫ undo.
+       - *Listen and spell*: audio only; tiles = letters + 3 decoys.
+       - *Match*: up to 4 words matched to their blanked sentences (tap word, then sentence).
+         Words given this type are grouped into one question; if fewer than 3 are left,
+         unscored filler pairs are added. A word is wrong if it was ever mismatched.
+       - *Odd one out*: 4 words, 3 share a part of speech; tap the different one (the target).
+       Multi-word entries are skipped for the spelling types; audio types need speech support.
+     Each word gets one randomly chosen type among the checked types it supports.
 4. **Order** — *In order* (library order) or *Shuffle*.
 5. **Start** button (disabled until the selection can produce at least one card/question).
    The last selection is remembered in `localStorage`.
@@ -76,22 +93,25 @@ Header: small kicker "KCIS Grade 1" + title "Vocabulary Practice" (home-screen a
 ## Session behavior
 - Words = union of the selected groups, de-duplicated. **Each word appears exactly once**;
   the session walks through the whole set.
-- **Flashcards**: big word card with the speak button right beside the word, tap to reveal
+- **Flashcards**: big word card (with its picture, if any) and the speak button right beside the word, tap to reveal
   part of speech + an example sentence, Previous / Next, progress bar, finish screen with
   Again / Home.
-- **Quiz**: one question per word, progress indicator, tap an option -> immediate
-  right/wrong feedback (show the correct answer). The Next button sits directly under the
-  options, right-aligned (not pinned to the bottom). Part-of-speech questions show the speak
-  button beside the word. Final **result screen** shows score, accuracy %, the missed words,
-  and buttons: *Retry missed words*, *Home*.
+- **Quiz**: one question per word (a Match question covers several words), progress
+  indicator, immediate right/wrong feedback (show the correct answer). The Next button sits
+  directly under the question, right-aligned (not pinned to the bottom). Views:
+  `src/components/quiz/` (`ChoiceView`, `SpellView`, `MatchView`) report an `Outcome` to
+  `Quiz.tsx`, which plays the scene and shows feedback. Final **result screen** shows score
+  (per word), accuracy %, the missed words, and buttons: *Retry missed words*, *Home*.
+- The Start tap primes Web Audio and speech (`primeAudio`, `primeSpeech`) so iOS allows the
+  automatic read-aloud of listening questions.
 - **Answer scenes**: after every answer a ~2.5 s non-blocking full-screen emoji animation
   plays with a matching sound effect.
   - Correct (15): fireworks, rocket, whale, balloons, rainbow, UFO + alien + planets,
     unicorn, butterflies, fish, party poppers, shooting stars, trophy, dinosaur, bunny,
     flowers.
   - Wrong (3, gentle and cute): peeking monkey 🙈, puzzled puppy 🐶❓, little rain cloud.
-  - On a correct answer the app also **speaks a praise phrase** (15: "Amazing!",
-    "Excellent!", "Terrific!", ...), also shown as the feedback text.
+  - On a correct answer a praise phrase (15: "Amazing!", "Excellent!", ...) is **shown** as
+    the feedback text. It is **not spoken** (the synthesized voice sounded too flat).
   - **No repeats within a round**: scenes, oops scenes and praises each come from a
     "shuffle bag" — every item is used once before any repeats, and a new round never starts
     with the previous round's last item.

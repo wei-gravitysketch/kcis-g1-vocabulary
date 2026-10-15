@@ -51,11 +51,6 @@ export default function Quiz({
       onHome={onHome}
       progress={index / questions.length}
       label={`${index + 1}/${questions.length}`}
-      footer={
-        <div className="min-h-16 pt-2">
-          {answered && <BigButton onClick={next}>{isLast ? 'See results' : 'Next →'}</BigButton>}
-        </div>
-      }
     >
       <div className="flex items-center justify-center gap-4 rounded-3xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-200">
         {q.kind === 'blank' ? (
@@ -87,9 +82,16 @@ export default function Quiz({
         ))}
       </div>
 
-      <p className={`h-8 text-center text-xl font-bold ${correct ? 'text-emerald-600' : 'text-rose-600'}`}>
-        {answered && (correct ? '🎉 Great job!' : `Answer: ${label(q.answer)}`)}
-      </p>
+      <div className="flex min-h-16 items-center justify-between gap-4">
+        <p className={`text-xl font-bold ${correct ? 'text-emerald-600' : 'text-rose-600'}`}>
+          {answered && (correct ? '🎉 Great job!' : `Answer: ${label(q.answer)}`)}
+        </p>
+        {answered && (
+          <div className="flex w-44 shrink-0">
+            <BigButton onClick={next}>{isLast ? 'Results' : 'Next →'}</BigButton>
+          </div>
+        )}
+      </div>
     </Shell>
   )
 }

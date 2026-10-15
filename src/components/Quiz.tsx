@@ -1,18 +1,27 @@
 import { useState } from 'react'
-import { POS_LABELS } from '../data/partsOfSpeech.js'
-import Shell, { BigButton } from './Shell.jsx'
-import SpeakButton from './SpeakButton.jsx'
+import { POS_LABELS, type PartOfSpeech } from '../data/partsOfSpeech'
+import type { AnswerResult, Question } from '../lib/session'
+import Shell, { BigButton } from './Shell'
+import SpeakButton from './SpeakButton'
 
-export default function Quiz({ questions, onHome, onFinish }) {
+export default function Quiz({
+  questions,
+  onHome,
+  onFinish,
+}: {
+  questions: Question[]
+  onHome: () => void
+  onFinish: (results: AnswerResult[]) => void
+}) {
   const [index, setIndex] = useState(0)
-  const [picked, setPicked] = useState(null)
-  const [results, setResults] = useState([])
+  const [picked, setPicked] = useState<string | null>(null)
+  const [results, setResults] = useState<AnswerResult[]>([])
 
   const q = questions[index]
   const answered = picked !== null
   const isLast = index === questions.length - 1
 
-  const choose = (option) => {
+  const choose = (option: string) => {
     if (answered) return
     setPicked(option)
     setResults((r) => [...r, { word: q.word, correct: option === q.answer }])
@@ -27,14 +36,14 @@ export default function Quiz({ questions, onHome, onFinish }) {
     setPicked(null)
   }
 
-  const optionClass = (option) => {
+  const optionClass = (option: string) => {
     if (!answered) return 'bg-white text-slate-800 ring-slate-200 active:bg-sky-50'
     if (option === q.answer) return 'bg-emerald-100 text-emerald-900 ring-emerald-500'
     if (option === picked) return 'bg-rose-100 text-rose-900 ring-rose-500'
     return 'bg-white text-slate-400 ring-slate-200'
   }
 
-  const label = (option) => (q.kind === 'pos' ? POS_LABELS[option] : option)
+  const label = (option: string) => (q.kind === 'pos' ? POS_LABELS[option as PartOfSpeech] : option)
   const correct = picked === q.answer
 
   return (

@@ -1,17 +1,21 @@
 import { useState } from 'react'
-import Home from './components/Home.jsx'
-import Flashcards from './components/Flashcards.jsx'
-import Quiz from './components/Quiz.jsx'
-import Result from './components/Result.jsx'
-import { buildQuestions, collectWords, shuffle } from './lib/session.js'
+import Home from './components/Home'
+import Flashcards from './components/Flashcards'
+import Quiz from './components/Quiz'
+import Result from './components/Result'
+import { buildQuestions, collectWords, shuffle, type AnswerResult, type Question, type SessionConfig } from './lib/session'
 
-// screen: { name: 'home' } | { name: 'flashcards', words, config, run }
-//       | { name: 'quiz', questions, config } | { name: 'result', results, config }
+type Screen =
+  | { name: 'home' }
+  | { name: 'flashcards'; words: string[]; config: SessionConfig; run: number }
+  | { name: 'quiz'; questions: Question[]; config: SessionConfig; run: number }
+  | { name: 'result'; results: AnswerResult[]; config: SessionConfig }
+
 export default function App() {
-  const [screen, setScreen] = useState({ name: 'home' })
+  const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const home = () => setScreen({ name: 'home' })
 
-  const start = (config, onlyWords) => {
+  const start = (config: SessionConfig, onlyWords?: string[]) => {
     const base = onlyWords ?? collectWords(config.termId, config.groupIds)
     const words = config.order === 'shuffle' ? shuffle(base) : base
     if (config.mode === 'flashcards') {

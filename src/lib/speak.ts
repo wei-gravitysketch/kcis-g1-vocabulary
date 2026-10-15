@@ -1,7 +1,7 @@
 // Read text aloud with the browser's built-in speech synthesis (if available).
 export const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window
 
-export function speak(text) {
+export function speak(text: string): void {
   if (!canSpeak) return
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(text)

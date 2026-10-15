@@ -1,6 +1,18 @@
 // Vocabulary library: Term -> group (Week / My Words to Know) -> words.
 // Names are free-form. Ids must be unique. See AGENT.md.
-export const vocabulary = [
+export interface WordGroup {
+  id: string
+  name: string
+  words: string[]
+}
+
+export interface Term {
+  id: string
+  name: string
+  groups: WordGroup[]
+}
+
+export const vocabulary: Term[] = [
   {
     id: 'term1',
     name: 'Term 1',

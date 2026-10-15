@@ -1,16 +1,16 @@
 // Validates the content in src/data. Run with `npm run validate`.
-import { vocabulary } from '../src/data/vocabulary.js'
-import { partsOfSpeech } from '../src/data/partsOfSpeech.js'
-import { sentences } from '../src/data/sentences.js'
+import { vocabulary } from '../src/data/vocabulary'
+import { partsOfSpeech } from '../src/data/partsOfSpeech'
+import { sentences } from '../src/data/sentences'
 
 const MIN_SENTENCES = 10
-const VALID_POS = new Set(['noun', 'verb', 'adj', 'adv'])
-const errors = []
+const VALID_POS = new Set<string>(['noun', 'verb', 'adj', 'adv'])
+const errors: string[] = []
 
-const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-const ids = new Set()
-const words = new Set()
+const ids = new Set<string>()
+const words = new Set<string>()
 for (const term of vocabulary) {
   if (ids.has(term.id)) errors.push(`duplicate id: ${term.id}`)
   ids.add(term.id)

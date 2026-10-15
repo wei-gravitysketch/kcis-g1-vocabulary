@@ -1,6 +1,15 @@
-import Shell, { BigButton } from './Shell.jsx'
+import type { AnswerResult } from '../lib/session'
+import Shell, { BigButton } from './Shell'
 
-export default function Result({ results, onHome, onRetryMissed }) {
+export default function Result({
+  results,
+  onHome,
+  onRetryMissed,
+}: {
+  results: AnswerResult[]
+  onHome: () => void
+  onRetryMissed: (missed: string[]) => void
+}) {
   const correct = results.filter((r) => r.correct).length
   const total = results.length
   const percent = total ? Math.round((correct / total) * 100) : 0

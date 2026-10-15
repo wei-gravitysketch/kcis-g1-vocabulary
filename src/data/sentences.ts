@@ -1,7 +1,7 @@
 // Sentence bank: word -> full sentences that contain the word exactly as spelled.
 // The blank is generated at runtime. Need >= 10 per word; add more any time.
 // Beginner level (6-year-old reader). See AGENT.md.
-export const sentences = {
+export const sentences: Record<string, string[]> = {
   // ---------- Term 1 / Week 1 ----------
   community: [
     'Our community has a library and a park.',

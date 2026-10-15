@@ -1,14 +1,16 @@
 // Part of speech per word: 'noun' | 'verb' | 'adj' | 'adv'.
 // Words not listed here (pronouns, prepositions, numbers, modals, ...) are never
 // asked in the part-of-speech question. One primary part of speech per word.
-export const POS_LABELS = {
+export type PartOfSpeech = 'noun' | 'verb' | 'adj' | 'adv'
+
+export const POS_LABELS: Record<PartOfSpeech, string> = {
   noun: 'Noun',
   verb: 'Verb',
   adj: 'Adjective',
   adv: 'Adverb',
 }
 
-export const partsOfSpeech = {
+export const partsOfSpeech: Record<string, PartOfSpeech> = {
   // Term 1
   community: 'noun',
   garden: 'noun',

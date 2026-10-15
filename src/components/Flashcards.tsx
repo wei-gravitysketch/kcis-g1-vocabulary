@@ -1,10 +1,18 @@
 import { useMemo, useState } from 'react'
-import { POS_LABELS, partsOfSpeech } from '../data/partsOfSpeech.js'
-import { randomSentence } from '../lib/session.js'
-import Shell, { BigButton } from './Shell.jsx'
-import SpeakButton from './SpeakButton.jsx'
+import { POS_LABELS, partsOfSpeech } from '../data/partsOfSpeech'
+import { randomSentence } from '../lib/session'
+import Shell, { BigButton } from './Shell'
+import SpeakButton from './SpeakButton'
 
-export default function Flashcards({ words, onHome, onAgain }) {
+export default function Flashcards({
+  words,
+  onHome,
+  onAgain,
+}: {
+  words: string[]
+  onHome: () => void
+  onAgain: () => void
+}) {
   const [index, setIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const examples = useMemo(() => words.map(randomSentence), [words])
@@ -30,7 +38,7 @@ export default function Flashcards({ words, onHome, onAgain }) {
 
   const word = words[index]
   const pos = partsOfSpeech[word]
-  const go = (next) => {
+  const go = (next: number) => {
     setIndex(next)
     setRevealed(false)
   }

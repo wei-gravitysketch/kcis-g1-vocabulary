@@ -1,5 +1,19 @@
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
+
 // Shared full-screen layout for the flashcard / quiz screens.
-export default function Shell({ onHome, progress, label, children, footer }) {
+export default function Shell({
+  onHome,
+  progress,
+  label,
+  children,
+  footer,
+}: {
+  onHome: () => void
+  progress: number
+  label: string
+  children: ReactNode
+  footer?: ReactNode
+}) {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className="flex items-center gap-3 py-2">
@@ -22,7 +36,11 @@ export default function Shell({ onHome, progress, label, children, footer }) {
   )
 }
 
-export function BigButton({ children, tone = 'primary', ...props }) {
+export function BigButton({
+  children,
+  tone = 'primary',
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { tone?: 'primary' | 'light' }) {
   const tones = {
     primary: 'bg-sky-600 text-white active:bg-sky-700 disabled:bg-slate-300',
     light: 'bg-white text-sky-700 ring-1 ring-slate-200 active:bg-slate-100 disabled:text-slate-300',

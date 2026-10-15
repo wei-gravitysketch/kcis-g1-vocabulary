@@ -1,6 +1,6 @@
-import { canSpeak, speak } from '../lib/speak.js'
+import { canSpeak, speak } from '../lib/speak'
 
-export default function SpeakButton({ text, label = 'Listen' }) {
+export default function SpeakButton({ text, label = 'Listen' }: { text: string; label?: string }) {
   if (!canSpeak) return null
   return (
     <button

@@ -1,20 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
-import { vocabulary } from '../data/vocabulary.js'
-import { collectWords, countQuestions } from '../lib/session.js'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { vocabulary } from '../data/vocabulary'
+import { collectWords, countQuestions, type QuestionType, type SessionConfig } from '../lib/session'
 
 const STORAGE_KEY = 'vocab-settings-v1'
 
-const defaults = {
+const defaults: SessionConfig = {
   termId: vocabulary[0].id,
   groupIds: [],
-  mode: 'flashcards', // 'flashcards' | 'quiz'
+  mode: 'flashcards',
   types: ['blank', 'pos'],
-  order: 'sequential', // 'sequential' | 'shuffle'
+  order: 'sequential',
 }
 
-function loadSettings() {
+function loadSettings(): SessionConfig {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as Partial<SessionConfig> | null
     if (saved && vocabulary.some((t) => t.id === saved.termId)) return { ...defaults, ...saved }
   } catch {
     // ignore: storage unavailable or corrupt
@@ -22,7 +22,17 @@ function loadSettings() {
   return defaults
 }
 
-function Section({ step, title, children, action }) {
+function Section({
+  step,
+  title,
+  children,
+  action,
+}: {
+  step: string
+  title: string
+  children: ReactNode
+  action?: ReactNode
+}) {
   return (
     <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -37,7 +47,15 @@ function Section({ step, title, children, action }) {
   )
 }
 
-function Segmented({ value, onChange, options }) {
+function Segmented<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T
+  onChange: (value: T) => void
+  options: { value: T; label: string }[]
+}) {
   return (
     <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1.5">
       {options.map((o) => (
@@ -56,7 +74,17 @@ function Segmented({ value, onChange, options }) {
   )
 }
 
-function Check({ checked, onChange, title, hint }) {
+function Check({
+  checked,
+  onChange,
+  title,
+  hint,
+}: {
+  checked: boolean
+  onChange: () => void
+  title: string
+  hint: string
+}) {
   return (
     <button
       type="button"
@@ -82,11 +110,11 @@ function Check({ checked, onChange, title, hint }) {
   )
 }
 
-export default function Home({ onStart }) {
+export default function Home({ onStart }: { onStart: (config: SessionConfig) => void }) {
   const [settings, setSettings] = useState(loadSettings)
   const { termId, groupIds, mode, types, order } = settings
-  const term = vocabulary.find((t) => t.id === termId)
-  const set = (patch) => setSettings((s) => ({ ...s, ...patch }))
+  const term = vocabulary.find((t) => t.id === termId) ?? vocabulary[0]
+  const set = (patch: Partial<SessionConfig>) => setSettings((s) => ({ ...s, ...patch }))
 
   // Drop selected groups that do not belong to the current term (e.g. library changed).
   const validGroupIds = useMemo(
@@ -105,9 +133,9 @@ export default function Home({ onStart }) {
   const words = useMemo(() => collectWords(termId, validGroupIds), [termId, validGroupIds])
   const total = mode === 'flashcards' ? words.length : countQuestions(words, types)
 
-  const toggleGroup = (id) =>
+  const toggleGroup = (id: string) =>
     set({ groupIds: validGroupIds.includes(id) ? validGroupIds.filter((g) => g !== id) : [...validGroupIds, id] })
-  const toggleType = (t) => set({ types: types.includes(t) ? types.filter((x) => x !== t) : [...types, t] })
+  const toggleType = (t: QuestionType) => set({ types: types.includes(t) ? types.filter((x) => x !== t) : [...types, t] })
 
   let problem = ''
   if (validGroupIds.length === 0) problem = 'Pick at least one list.'

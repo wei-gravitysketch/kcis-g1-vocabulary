@@ -1,0 +1,86 @@
+import { useState } from 'react'
+import { POS_LABELS } from '../data/partsOfSpeech.js'
+import Shell, { BigButton } from './Shell.jsx'
+import SpeakButton from './SpeakButton.jsx'
+
+export default function Quiz({ questions, onHome, onFinish }) {
+  const [index, setIndex] = useState(0)
+  const [picked, setPicked] = useState(null)
+  const [results, setResults] = useState([])
+
+  const q = questions[index]
+  const answered = picked !== null
+  const isLast = index === questions.length - 1
+
+  const choose = (option) => {
+    if (answered) return
+    setPicked(option)
+    setResults((r) => [...r, { word: q.word, correct: option === q.answer }])
+  }
+
+  const next = () => {
+    if (isLast) {
+      onFinish(results)
+      return
+    }
+    setIndex(index + 1)
+    setPicked(null)
+  }
+
+  const optionClass = (option) => {
+    if (!answered) return 'bg-white text-slate-800 ring-slate-200 active:bg-sky-50'
+    if (option === q.answer) return 'bg-emerald-100 text-emerald-900 ring-emerald-500'
+    if (option === picked) return 'bg-rose-100 text-rose-900 ring-rose-500'
+    return 'bg-white text-slate-400 ring-slate-200'
+  }
+
+  const label = (option) => (q.kind === 'pos' ? POS_LABELS[option] : option)
+  const correct = picked === q.answer
+
+  return (
+    <Shell
+      onHome={onHome}
+      progress={index / questions.length}
+      label={`${index + 1}/${questions.length}`}
+      footer={
+        <div className="min-h-16 pt-2">
+          {answered && <BigButton onClick={next}>{isLast ? 'See results' : 'Next →'}</BigButton>}
+        </div>
+      }
+    >
+      <div className="flex items-center justify-center gap-4 rounded-3xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-200">
+        {q.kind === 'blank' ? (
+          <p className="text-2xl leading-snug font-bold text-slate-800 sm:text-3xl">
+            {answered ? q.sentence : q.prompt}
+          </p>
+        ) : (
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-slate-500">What kind of word is this?</p>
+            <p className="text-5xl font-extrabold break-words text-sky-700">{q.word}</p>
+          </div>
+        )}
+        {(q.kind === 'pos' || answered) && (
+          <SpeakButton text={q.kind === 'pos' ? q.word : q.sentence} label="Listen" />
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {q.options.map((option) => (
+          <button
+            key={option}
+            type="button"
+            disabled={answered}
+            onClick={() => choose(option)}
+            className={`min-h-20 rounded-2xl px-4 text-2xl font-bold ring-2 transition ${optionClass(option)}`}
+          >
+            {label(option)}
+          </button>
+        ))}
+      </div>
+
+      <p className={`h-8 text-center text-xl font-bold ${correct ? 'text-emerald-600' : 'text-rose-600'}`}>
+        {answered && (correct ? '🎉 Great job!' : `Answer: ${label(q.answer)}`)}
+      </p>
+    </Shell>
+  )
+}

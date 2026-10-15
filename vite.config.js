@@ -4,6 +4,6 @@ import tailwindcss from '@tailwindcss/vite'
 
 // GitHub Pages serves the project under /<repo-name>/
 export default defineConfig({
-  base: '/kcis-grade1-vocaburary/',
+  base: '/kcis-g1-vocabulary/',
   plugins: [react(), tailwindcss()],
 })

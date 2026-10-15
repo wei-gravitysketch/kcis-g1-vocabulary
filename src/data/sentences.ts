@@ -264,7 +264,7 @@ export const sentences: Record<string, string[]> = {
     'I visualize the story in my head.',
     'Can you visualize a dragon?',
     'We visualize what the garden looks like.',
-    'Good readers visualize as they read.',
+    'I visualize a cat in a big red hat.',
     'I visualize my birthday cake.',
     'Try to visualize the park.',
     'I visualize a rainbow in the sky.',

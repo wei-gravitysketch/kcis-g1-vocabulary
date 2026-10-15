@@ -9,9 +9,22 @@ export default function WordListDialog({ group, onClose }: { group: WordGroup; o
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  // Lock page scroll while open. Pinning the body with position: fixed is the variant
+  // that also works on iOS Safari (overflow: hidden alone does not).
+  useEffect(() => {
+    const { body } = document
+    const y = window.scrollY
+    const prev = body.style.cssText
+    body.style.cssText += `;position:fixed;top:-${y}px;left:0;right:0;overflow:hidden`
+    return () => {
+      body.style.cssText = prev
+      window.scrollTo(0, y)
+    }
+  }, [])
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center overscroll-contain bg-slate-900/40 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center"
       onClick={onClose}
     >
       <div
@@ -32,7 +45,7 @@ export default function WordListDialog({ group, onClose }: { group: WordGroup; o
             ✕
           </button>
         </div>
-        <ul className="overflow-y-auto px-5 py-3">
+        <ul className="overflow-y-auto overscroll-contain px-5 py-3">
           {group.words.map((w) => (
             <li key={w} className="flex items-center justify-between gap-3 border-b border-slate-100 py-2 last:border-0">
               <span className="text-xl font-semibold text-slate-800">{w}</span>

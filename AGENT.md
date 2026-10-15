@@ -53,11 +53,12 @@ Term 2: Week 11, 12, 13, My Words to Know (Week 14), Week 15, 16, 17, My Words t
 ## Home screen (settings)
 Header: small kicker "KCIS Grade 1" + title "Vocabulary Practice" (home-screen app name "G1 Vocabulary").
 
-1. **Term** — dropdown, single select (Term 1, Term 2, ...).
+1. **Term** — dropdown, single select (Term 1, Term 2, ...). Native arrow hidden; a large
+   chevron icon with comfortable right padding is drawn instead.
 2. **Word List** — after a term is chosen, show its groups as multi-select toggle chips
    (with Select all / Clear). At least one must be selected. Each chip has a small
    **See words** button on its right that opens a dialog listing that group's words (with
-   speak buttons). Below the chips, right-aligned, a small **All words table ↗** link opens
+   speak buttons). While the dialog is open the page behind it must not scroll. Below the chips, right-aligned, a small **All words table ↗** link opens
    `words.html` in a new tab.
 3. **Mode** (choose one):
    - **Flashcards** — just show the cards.
@@ -83,16 +84,26 @@ Header: small kicker "KCIS Grade 1" + title "Vocabulary Practice" (home-screen a
   options, right-aligned (not pinned to the bottom). Part-of-speech questions show the speak
   button beside the word. Final **result screen** shows score, accuracy %, the missed words,
   and buttons: *Retry missed words*, *Home*.
-- **Celebration** on every correct answer: a ~2.5 s non-blocking full-screen animation picked
-  at random (never the same twice in a row) with a matching sound effect:
-  fireworks, rocket launch, whale jumping out of the water, balloons, rainbow + stars.
-  Animations: `src/components/Celebration.tsx` + `cel-*` keyframes in `src/index.css`.
-  Sounds: synthesized with the Web Audio API in `src/lib/celebrations.ts` (no audio files).
-  Hidden when the user prefers reduced motion.
+- **Answer scenes**: after every answer a ~2.5 s non-blocking full-screen emoji animation
+  plays with a matching sound effect.
+  - Correct (15): fireworks, rocket, whale, balloons, rainbow, UFO + alien + planets,
+    unicorn, butterflies, fish, party poppers, shooting stars, trophy, dinosaur, bunny,
+    flowers.
+  - Wrong (3, gentle and cute): peeking monkey 🙈, puzzled puppy 🐶❓, little rain cloud.
+  - On a correct answer the app also **speaks a praise phrase** (15: "Amazing!",
+    "Excellent!", "Terrific!", ...), also shown as the feedback text.
+  - **No repeats within a round**: scenes, oops scenes and praises each come from a
+    "shuffle bag" — every item is used once before any repeats, and a new round never starts
+    with the previous round's last item.
+  - Code: kinds, praises, picking and sounds in `src/lib/celebrations.ts` (Web Audio API, no
+    audio files); scenes in `src/components/Celebration.tsx`; `cel-*` keyframes (including
+    reusable motion primitives: across, hop, bob, rise, fall, flutter, pop, grow...) in
+    `src/index.css`. Animals moving across the screen move right-to-left because Apple's
+    emoji face left. Hidden when the user prefers reduced motion.
 
 ## All words page (`words.html`)
-Standalone second Vite entry (`src/words.tsx` -> `src/components/AllWords.tsx`): one table per
-term, rows grouped by word list, with part of speech and a speak button. Generated from the
+Standalone second Vite entry (`src/words.tsx` -> `src/components/AllWords.tsx`): one
+collapsible table per term (plus Expand all / Collapse all), rows grouped by word list, with part of speech and a speak button. Generated from the
 same data files.
 
 ## Speech

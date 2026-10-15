@@ -153,17 +153,31 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
       </header>
 
       <Section step="1" title="Term">
-        <select
-          value={termId}
-          onChange={(e) => set({ termId: e.target.value, groupIds: [] })}
-          className="min-h-14 w-full rounded-2xl border-2 border-slate-200 bg-white px-4 text-lg font-semibold text-slate-800"
-        >
-          {vocabulary.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={termId}
+            onChange={(e) => set({ termId: e.target.value, groupIds: [] })}
+            className="min-h-14 w-full appearance-none rounded-2xl border-2 border-slate-200 bg-white pr-14 pl-4 text-lg font-semibold text-slate-800"
+          >
+            {vocabulary.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            className="pointer-events-none absolute top-1/2 right-4 size-7 -translate-y-1/2 text-sky-700"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
       </Section>
 
       <Section

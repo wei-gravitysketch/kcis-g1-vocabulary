@@ -4,7 +4,8 @@ import type { AnswerResult, Question } from '../lib/session'
 import Shell, { BigButton } from './Shell'
 import SpeakButton from './SpeakButton'
 import Celebration from './Celebration'
-import { pickCelebration, playCelebrationSound, type CelebrationKind } from '../lib/celebrations'
+import { pickCelebration, pickOops, pickPraise, playSceneSound, type SceneKind } from '../lib/celebrations'
+import { speak } from '../lib/speak'
 
 export default function Quiz({
   questions,
@@ -18,7 +19,8 @@ export default function Quiz({
   const [index, setIndex] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const [results, setResults] = useState<AnswerResult[]>([])
-  const [celebration, setCelebration] = useState<{ kind: CelebrationKind; id: number } | null>(null)
+  const [scene, setScene] = useState<{ kind: SceneKind; id: number } | null>(null)
+  const [praise, setPraise] = useState('')
 
   const q = questions[index]
   const answered = picked !== null
@@ -28,10 +30,13 @@ export default function Quiz({
     if (answered) return
     setPicked(option)
     setResults((r) => [...r, { word: q.word, correct: option === q.answer }])
+    const kind = option === q.answer ? pickCelebration() : pickOops()
+    setScene({ kind, id: Date.now() })
+    playSceneSound(kind)
     if (option === q.answer) {
-      const kind = pickCelebration(celebration?.kind)
-      setCelebration({ kind, id: Date.now() })
-      playCelebrationSound(kind)
+      const phrase = pickPraise()
+      setPraise(phrase)
+      speak(phrase)
     }
   }
 
@@ -93,7 +98,7 @@ export default function Quiz({
 
       <div className="flex min-h-16 items-center justify-between gap-4">
         <p className={`text-xl font-bold ${correct ? 'text-emerald-600' : 'text-rose-600'}`}>
-          {answered && (correct ? '🎉 Great job!' : `Answer: ${label(q.answer)}`)}
+          {answered && (correct ? `🎉 ${praise}` : `Answer: ${label(q.answer)}`)}
         </p>
         {answered && (
           <div className="flex w-44 shrink-0">
@@ -102,9 +107,7 @@ export default function Quiz({
         )}
       </div>
 
-      {celebration && (
-        <Celebration key={celebration.id} kind={celebration.kind} onDone={() => setCelebration(null)} />
-      )}
+      {scene && <Celebration key={scene.id} kind={scene.kind} onDone={() => setScene(null)} />}
     </Shell>
   )
 }

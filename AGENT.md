@@ -79,6 +79,18 @@ Code: `src/components/AppMenu.tsx` (list of pages), shared home layout (header w
 numbered `Section`s, `Segmented`, fixed Start bar that primes audio + speech) in
 `src/components/HomeLayout.tsx`.
 
+## Announcement ("what's new" dialog)
+When any page opens (vocabulary, Parts of Speech, `words.html`), a dialog shows the current
+announcement: title, paragraphs (may be Chinese, `lang="zh-Hant"`) and one confirm button
+(確認). It closes only with that button (or Escape) — not by tapping outside — and the page
+behind does not scroll. Once closed it is remembered per device (`localStorage`
+`announcement-seen` = the announcement's id) and not shown again on any page.
+- Content: `src/data/announcement.ts` (`id`, `title`, `paragraphs`, `button`; `null` = none).
+  **To announce a new change, give it a new `id`** so everyone sees it once.
+- Code: `src/components/Announcement.tsx`, mounted next to the app in every entry
+  (`main.tsx`, `grammar.tsx`, `words.tsx`). Scroll lock shared with the word-list dialog:
+  `src/lib/useBodyScrollLock.ts`.
+
 ## Home screen (settings)
 Header: small kicker "KCIS Grade 1" + title "Vocabulary Practice" + menu button (no subtitle;
 home-screen app name "G1 Vocabulary").

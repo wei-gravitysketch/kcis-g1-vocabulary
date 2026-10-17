@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import type { WordGroup } from '../data/vocabulary'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 import SpeakButton from './SpeakButton'
 
 export default function WordListDialog({ group, onClose }: { group: WordGroup; onClose: () => void }) {
@@ -9,18 +10,7 @@ export default function WordListDialog({ group, onClose }: { group: WordGroup; o
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  // Lock page scroll while open. Pinning the body with position: fixed is the variant
-  // that also works on iOS Safari (overflow: hidden alone does not).
-  useEffect(() => {
-    const { body } = document
-    const y = window.scrollY
-    const prev = body.style.cssText
-    body.style.cssText += `;position:fixed;top:-${y}px;left:0;right:0;overflow:hidden`
-    return () => {
-      body.style.cssText = prev
-      window.scrollTo(0, y)
-    }
-  }, [])
+  useBodyScrollLock()
 
   return (
     <div

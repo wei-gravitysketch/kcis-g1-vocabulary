@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { vocabulary, type WordGroup } from '../data/vocabulary'
-import WordListDialog from './WordListDialog'
-import { primeAudio } from '../lib/celebrations'
 import { DEFAULT_TYPES, LEVELS, QUESTION_TYPES } from '../lib/questionTypes'
 import { collectWords, countAskable, type QuestionType, type SessionConfig } from '../lib/session'
-import { primeSpeech } from '../lib/speak'
+import HomeLayout, { Section, Segmented } from './HomeLayout'
+import WordListDialog from './WordListDialog'
 
 // v2: question types changed (Basic/Advanced); older saved settings are ignored.
 const STORAGE_KEY = 'vocab-settings-v2'
@@ -28,58 +27,6 @@ function loadSettings(): SessionConfig {
     // ignore: storage unavailable or corrupt
   }
   return defaults
-}
-
-function Section({
-  step,
-  title,
-  children,
-  action,
-}: {
-  step: string
-  title: string
-  children: ReactNode
-  action?: ReactNode
-}) {
-  return (
-    <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-3 text-lg font-bold text-slate-800">
-          <span className="grid size-8 place-items-center rounded-full bg-sky-600 text-sm text-white">{step}</span>
-          {title}
-        </h2>
-        {action}
-      </div>
-      {children}
-    </section>
-  )
-}
-
-function Segmented<T extends string>({
-  value,
-  onChange,
-  options,
-}: {
-  value: T
-  onChange: (value: T) => void
-  options: { value: T; label: string }[]
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1.5">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          onClick={() => onChange(o.value)}
-          className={`min-h-14 rounded-xl px-3 text-lg font-semibold transition ${
-            value === o.value ? 'bg-white text-sky-700 shadow' : 'text-slate-500'
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  )
 }
 
 function Check({
@@ -152,11 +99,13 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
   else if (total === 0) problem = 'No words match this question type.'
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col gap-4 px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(8rem,calc(env(safe-area-inset-bottom)+7rem))]">
-      <header className="py-2 text-center">
-        <p className="text-sm font-bold tracking-widest text-sky-500 uppercase">KCIS Grade 1</p>
-        <h1 className="text-3xl font-extrabold text-sky-700 sm:text-4xl">Vocabulary Practice</h1>
-      </header>
+    <HomeLayout
+      page="vocabulary"
+      title="Vocabulary Practice"
+      startLabel={problem || `Start · ${total} ${mode === 'quiz' ? 'words' : 'cards'}`}
+      canStart={!problem}
+      onStart={() => onStart({ termId, groupIds: validGroupIds, mode, types, order })}
+    >
 
       <Section step="1" title="Term">
         <div className="relative">
@@ -301,25 +250,7 @@ export default function Home({ onStart }: { onStart: (config: SessionConfig) => 
         />
       </Section>
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white/90 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
-        <div className="mx-auto max-w-2xl">
-          <button
-            type="button"
-            disabled={Boolean(problem)}
-            onClick={() => {
-              // Unlock audio and speech on iOS while we are inside a tap.
-              primeAudio()
-              primeSpeech()
-              onStart({ termId, groupIds: validGroupIds, mode, types, order })
-            }}
-            className="min-h-16 w-full rounded-2xl bg-sky-600 text-xl font-bold text-white shadow-lg transition active:bg-sky-700 disabled:bg-slate-300 disabled:shadow-none"
-          >
-            {problem || `Start · ${total} ${mode === 'quiz' ? 'words' : 'cards'}`}
-          </button>
-        </div>
-      </div>
-
       {viewing && <WordListDialog group={viewing} onClose={() => setViewing(null)} />}
-    </div>
+    </HomeLayout>
   )
 }

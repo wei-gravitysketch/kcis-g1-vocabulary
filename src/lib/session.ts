@@ -3,9 +3,11 @@ import { partsOfSpeech, type PartOfSpeech } from '../data/partsOfSpeech'
 import { pictures } from '../data/pictures'
 import { sentences } from '../data/sentences'
 import type { QuestionType } from './questionTypes'
+import { shuffle } from './shuffle'
 import { canSpeak } from './speak'
 
 export type { QuestionType } from './questionTypes'
+export { shuffle } from './shuffle'
 export type Mode = 'flashcards' | 'quiz'
 export type Order = 'sequential' | 'shuffle'
 
@@ -69,14 +71,6 @@ export const BLANK = '_____'
 const MATCH_SIZE = 4
 const MATCH_MIN = 3
 
-export function shuffle<T>(list: readonly T[]): T[] {
-  const a = [...list]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
 
 const pickOne = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)]
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

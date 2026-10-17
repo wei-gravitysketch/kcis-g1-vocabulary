@@ -9,9 +9,10 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
     rollupOptions: {
-      // Two pages: the app, and the standalone "all words" table.
+      // Pages: the vocabulary test, the Parts of Speech test, and the standalone "all words" table.
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        grammar: fileURLToPath(new URL('./parts-of-speech/index.html', import.meta.url)),
         words: fileURLToPath(new URL('./words.html', import.meta.url)),
       },
     },

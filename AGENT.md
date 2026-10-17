@@ -2,12 +2,17 @@
 
 A static, mobile-first website of English vocabulary flashcards and quizzes for
 Grade 1 students (age ~6) at 康橋國小. Used mainly on **iPad and phones**; must be
-installable via **Add to Home Screen**. Personal project: commit straight to `main`,
+installable via **Add to Home Screen**. It holds two tests, switched with the menu (☰):
+- **Vocabulary** — `/kcis-g1-vocabulary/` (`index.html`): flashcards + vocabulary quiz.
+- **Parts of Speech** — `/kcis-g1-vocabulary/parts-of-speech/` (`parts-of-speech/index.html`):
+  find the nouns / verbs / adjectives / articles in a sentence. Personal project: commit straight to `main`,
 no PRs. Every push to `main` deploys to GitHub Pages
 (https://wei-gravitysketch.github.io/kcis-g1-vocabulary/).
 
 ## Stack
 - Vite + React + **TypeScript** (strict; no router, no backend) + Tailwind CSS v4.
+  Each test is its own HTML page (Vite multi-page build), so every route is a real file on
+  GitHub Pages; pages link to each other with plain `<a href>`.
 - All source is `.ts` / `.tsx`; no `.js` files in `src/` or `scripts/`. `tsc` type-checks only
   (`noEmit`); Vite does the bundling.
 - `vite.config.ts` `base` must equal `/<repo-name>/` (currently `/kcis-g1-vocabulary/`).
@@ -43,9 +48,21 @@ Three-level hierarchy; the **names of every level are free-form strings**:
   answer), and make the sentence have a clear single answer.
 - `src/data/pictures.ts` — `Record<string, string>` (word -> one emoji), used by the Picture and
   True-or-false questions (not flashcards). Only words that one picture shows clearly; others are never asked with a picture. Emoji must be unique.
+- `src/data/grammarSentences.ts` — the Parts of Speech sentence bank (`string[]`, >= 200).
+  Each noun / verb / adjective / article carries a tag after a slash:
+  `'The/art big/adj dog/n runs/v in the/art park/n.'` (`n`, `v`, `adj`, `art`). Untagged words
+  are other kinds of words and never an answer. Sentences need not contain all four kinds but
+  must be **complete sentences** (at least one noun and one verb), start with a capital letter
+  and end with `.` or `!` (no other punctuation). To keep every answer clear for a 6-year-old,
+  avoid words whose kind is arguable: pronouns, possessives (my, his), numbers, is/are, helping
+  verbs (can, will), adverbs, -ing forms, and nouns used as adjectives ("school bus"). Names
+  (Tom, Mom, Grandma) are nouns. Mix the answer counts (one or several of a kind).
 - `scripts/validate-data.ts` (`npm run validate`) enforces: every vocabulary word has
   >= 10 unique sentences that contain the word; POS values are valid; ids unique; picture
-  words exist and pictures are unique.
+  words exist and pictures are unique. For the grammar bank: >= 200 unique sentences that
+  parse; capital + end punctuation; a noun and a verb in each; untagged words only from its
+  `OTHER_WORDS` list (in, on, and, ...); a word is tagged the same way in every sentence;
+  a/an/the are always (and only) articles; "a"/"an" agree with the next word.
   When adding vocabulary, add its sentences + POS (+ picture if it fits) and run validate.
 
 ### Current library
@@ -53,9 +70,18 @@ Term 1: Week 1, 2, 3, My Words to Know (Week 4), Week 5, 6, 7, My Words to Know 
 Term 2: Week 11, 12, 13, My Words to Know (Week 14), Week 15, 16, 17, My Words to Know (Week 18).
 "My Words to Know" groups are always named `My Words to Know (Week N)`, N being the week they cover.
 
+## Menu (switch tests)
+Both home (settings) screens have a round **menu button (☰) at the top right** of the header
+(row of the "KCIS Grade 1" kicker, title below). It opens a small panel listing the tests
+(📚 Vocabulary, 🔍 Parts of Speech) with the current one marked; tap outside / Escape closes.
+It is **not shown while a test is running** (flashcards, quiz, result screens use `Shell`).
+Code: `src/components/AppMenu.tsx` (list of pages), shared home layout (header with menu,
+numbered `Section`s, `Segmented`, fixed Start bar that primes audio + speech) in
+`src/components/HomeLayout.tsx`.
+
 ## Home screen (settings)
-Header: small kicker "KCIS Grade 1" + title "Vocabulary Practice" (no subtitle; home-screen app
-name "G1 Vocabulary").
+Header: small kicker "KCIS Grade 1" + title "Vocabulary Practice" + menu button (no subtitle;
+home-screen app name "G1 Vocabulary").
 
 1. **Term** — dropdown, single select (Term 1, Term 2, ...). Native arrow hidden; a large
    chevron icon with comfortable right padding is drawn instead.
@@ -104,8 +130,10 @@ name "G1 Vocabulary").
   indicator, immediate right/wrong feedback (show the correct answer). The Next button sits
   directly under the question, right-aligned (not pinned to the bottom). Views:
   `src/components/quiz/` (`ChoiceView`, `SpellView`, `MatchView`) report an `Outcome` to
-  `Quiz.tsx`, which plays the scene and shows feedback. Final **result screen** shows score
-  (per word), accuracy %, the missed words, and buttons: *Retry missed words*, *Home*.
+  `Quiz.tsx`, which plays the scene and shows feedback. `Quiz.tsx` is generic (any question
+  type, drawn by a `renderQuestion` prop) and shared with the Parts of Speech test. Final
+  **result screen** (`Result.tsx`, shared) shows score (per word), accuracy %, the missed words,
+  and buttons: *Retry missed words*, *Home*.
 - The Start tap primes Web Audio and speech (`primeAudio`, `primeSpeech`) so iOS allows the
   automatic read-aloud of listening questions.
 - **Answer scenes**: after every answer a ~2.5 s non-blocking full-screen emoji animation
@@ -125,8 +153,28 @@ name "G1 Vocabulary").
     `src/index.css`. Animals moving across the screen move right-to-left because Apple's
     emoji face left. Hidden when the user prefers reduced motion.
 
+## Parts of Speech test (`parts-of-speech/`)
+Entry `parts-of-speech/index.html` -> `src/grammar.tsx` -> `src/components/grammar/GrammarApp.tsx`
+(home -> quiz -> result). Logic in `src/lib/grammar.ts`; it does not import the vocabulary data
+(so this page's bundle stays small).
+- **Home**: header "KCIS Grade 1" / "Parts of Speech" + menu; one section **How many
+  questions?** — 5 / 10 / 20 / 30 (default 10, remembered in `localStorage`); one line saying
+  what the test is; Start button.
+- **Question** (`SentenceView.tsx`): "Tap all the nouns." (or verbs / adjectives / articles) and
+  the sentence as big word chips (🔊 reads the sentence). The child toggles words, then taps
+  **Check** (bottom right, where Next appears afterwards). One or several words may be right;
+  **nothing tells how many** (same wording every time). Correct only if the picked set equals
+  the answer set exactly. After checking: right picks green, missed answers green dashed, wrong
+  picks red struck through; wrong answers show "Answer: dog, park".
+- **Building a test**: each question uses a different sentence; the kinds take turns (all four
+  in random order, then again) so a test mixes them evenly; a sentence is only asked for a kind
+  it contains.
+- Same answer scenes, praise, sounds and progress bar as the vocabulary quiz (shared `Quiz`).
+- **Result**: shared `Result` screen (Blankie Bear on 100%), "Sentences to practice" lists the
+  missed sentences with their kind and the answer words marked; *Retry missed* re-asks them.
+
 ## Blankie Bear (被被熊) — reward for a perfect quiz
-When a quiz ends at **100%**, Blankie Bear appears on the result screen: a bear head (white,
+When a quiz (either test) ends at **100%**, Blankie Bear appears on the result screen: a bear head (white,
 blue ears, small grumpy face) on a blue-and-white striped blanket. It must look **exactly like
 the owner's drawing**: `bear/bearShape.ts` is a tracing of that drawing in its own pixel space
 (head, ears, face, the 3-cornered blanket, the 7 stripe lines that stop short of the edges, and
@@ -163,13 +211,15 @@ improves it.
 
 ## PWA / Add to Home Screen
 `public/manifest.webmanifest`, `apple-touch-icon.png` and icons in `public/`, iOS meta tags
-in `index.html` (standalone display, status bar style, app title). Use `%BASE_URL%`-relative
-paths so it works under the GitHub Pages sub-path. No service worker in v1 (online use). Two HTML entries: `index.html`, `words.html`
-(see `vite.config.ts` `build.rollupOptions.input`).
+in `index.html` and `parts-of-speech/index.html` (standalone display, status bar style, app
+title). Use `%BASE_URL%`-relative paths so it works under the GitHub Pages sub-path. No service
+worker in v1 (online use). Three HTML entries: `index.html`, `parts-of-speech/index.html`,
+`words.html` (see `vite.config.ts` `build.rollupOptions.input`); a new page must be added there.
 
 ## Conventions
 - Shared types live next to their data/logic (`Term`/`WordGroup` in `vocabulary.ts`, `PartOfSpeech` in
   `partsOfSpeech.ts`, `SessionConfig`/`Question`/... in `lib/session.ts`). Avoid `any`.
 - Keep components small, in `src/components/`; pure logic in `src/lib/` (session building,
-  shuffling, blanking) so it can be unit-tested.
+  shuffling, blanking, grammar questions) so it can be unit-tested. `shuffle` lives in
+  `src/lib/shuffle.ts` so pages can use it without pulling in other data.
 - Prefer config/data changes over code changes for content updates.

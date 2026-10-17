@@ -1,0 +1,9 @@
+/** A shuffled copy of `list` (Fisher-Yates). Kept in its own module so every page can use it cheaply. */
+export function shuffle<T>(list: readonly T[]): T[] {
+  const a = [...list]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}

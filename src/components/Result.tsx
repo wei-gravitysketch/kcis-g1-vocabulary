@@ -1,23 +1,26 @@
-import { lazy, Suspense } from 'react'
-import type { AnswerResult } from '../lib/session'
+import { lazy, Suspense, type ReactNode } from 'react'
 import Shell, { BigButton } from './Shell'
 
 // Loaded only when needed (a perfect score), in its own small chunk.
 const BlankieBear = lazy(() => import('./bear/BlankieBear'))
 
+/** Final screen of a quiz: score and accuracy, what to practice (children), Retry missed / Home. */
 export default function Result({
-  results,
+  correct,
+  total,
   onHome,
   onRetryMissed,
+  children,
 }: {
-  results: AnswerResult[]
+  correct: number
+  total: number
   onHome: () => void
-  onRetryMissed: (missed: string[]) => void
+  /** Shown as "Retry missed" when something was missed. */
+  onRetryMissed?: () => void
+  /** What to practice, e.g. a <PracticeCard>. */
+  children?: ReactNode
 }) {
-  const correct = results.filter((r) => r.correct).length
-  const total = results.length
   const percent = total ? Math.round((correct / total) * 100) : 0
-  const missed = results.filter((r) => !r.correct).map((r) => r.word)
   const emoji = percent === 100 ? '🏆' : percent >= 70 ? '🌟' : '💪'
 
   return (
@@ -30,7 +33,7 @@ export default function Result({
           <BigButton tone="light" onClick={onHome}>
             Home
           </BigButton>
-          {missed.length > 0 && <BigButton onClick={() => onRetryMissed(missed)}>Retry missed</BigButton>}
+          {onRetryMissed && <BigButton onClick={onRetryMissed}>Retry missed</BigButton>}
         </div>
       }
     >
@@ -42,18 +45,7 @@ export default function Result({
         </p>
       </div>
 
-      {missed.length > 0 && (
-        <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <h2 className="mb-3 text-lg font-bold text-slate-800">Words to practice</h2>
-          <div className="flex flex-wrap gap-2">
-            {missed.map((w) => (
-              <span key={w} className="rounded-full bg-rose-100 px-4 py-2 text-lg font-semibold text-rose-800">
-                {w}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+      {children}
 
       {percent === 100 && (
         <Suspense fallback={null}>
@@ -61,5 +53,14 @@ export default function Result({
         </Suspense>
       )}
     </Shell>
+  )
+}
+
+export function PracticeCard({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+      <h2 className="mb-3 text-lg font-bold text-slate-800">{title}</h2>
+      {children}
+    </div>
   )
 }

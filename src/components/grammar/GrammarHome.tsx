@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { KIND_LABELS, QUESTION_COUNTS, WORD_KINDS, type QuestionCount, type WordKind } from '../../lib/grammar'
+import { KIND_LABELS, parseSentence, QUESTION_COUNTS, WORD_KINDS, type QuestionCount, type WordKind } from '../../lib/grammar'
 import HomeLayout, { Check, Section, Segmented } from '../HomeLayout'
+import { CHIP } from './SentenceView'
 
 const STORAGE_KEY = 'grammar-settings-v1'
 
@@ -20,6 +21,35 @@ const EXAMPLES: Record<WordKind, string> = {
 }
 
 const capitalize = (s: string) => s[0].toUpperCase() + s.slice(1)
+
+// Shown under the title so everyone sees what a question looks like (not in the sentence bank).
+const EXAMPLE = parseSentence('The/art little/adj cat/n sits/v on the/art mat/n.')
+const EXAMPLE_KIND: WordKind = 'noun'
+
+/** A small, already-answered sample question. */
+function Example() {
+  const { tokens, end } = EXAMPLE
+  return (
+    <div className="rounded-3xl bg-sky-50 px-4 py-3 text-center ring-1 ring-sky-100">
+      <p className="text-xs font-bold tracking-widest text-sky-500 uppercase">Example</p>
+      <p className="mt-1 text-lg font-bold text-slate-700">
+        Tap all the <span className="text-sky-700">{KIND_LABELS[EXAMPLE_KIND].many}</span>.
+      </p>
+      <p className="mt-2 flex flex-wrap items-end justify-center gap-1.5">
+        {tokens.map((t, i) => (
+          <span key={i} className="flex items-end">
+            <span
+              className={`rounded-xl border-2 px-2 py-0.5 text-lg font-bold ${CHIP[t.kind === EXAMPLE_KIND ? 'hit' : 'idle']}`}
+            >
+              {t.text}
+            </span>
+            {i === tokens.length - 1 && <span className="pl-0.5 text-lg font-bold text-slate-700">{end}</span>}
+          </span>
+        ))}
+      </p>
+    </div>
+  )
+}
 
 function loadSettings(): GrammarSettings {
   try {
@@ -60,6 +90,8 @@ export default function GrammarHome({ onStart }: { onStart: (settings: GrammarSe
       canStart={kinds.length > 0}
       onStart={() => onStart(settings)}
     >
+      <Example />
+
       <Section step="1" title="How many questions?">
         <Segmented<QuestionCount>
           value={count}

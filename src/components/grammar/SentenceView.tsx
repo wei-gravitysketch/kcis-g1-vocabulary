@@ -6,7 +6,7 @@ import SpeakButton from '../SpeakButton'
 
 type ChipState = 'idle' | 'picked' | 'hit' | 'missed' | 'wrong' | 'rest'
 
-const CHIP: Record<ChipState, string> = {
+export const CHIP: Record<ChipState, string> = {
   idle: 'border-slate-200 bg-white text-slate-800 active:bg-sky-50',
   picked: 'border-sky-600 bg-sky-600 text-white',
   hit: 'border-emerald-500 bg-emerald-500 text-white',

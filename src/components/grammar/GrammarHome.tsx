@@ -23,7 +23,7 @@ const EXAMPLES: Record<WordKind, string> = {
 const capitalize = (s: string) => s[0].toUpperCase() + s.slice(1)
 
 // Shown under the title so everyone sees what a question looks like (not in the sentence bank).
-const EXAMPLE = parseSentence('The/art cat/n eats/v fish/n.')
+const EXAMPLE = parseSentence('Tom/n reads/v a/art book/n.')
 const EXAMPLE_KIND: WordKind = 'noun'
 
 /** A small, already-answered sample question. */

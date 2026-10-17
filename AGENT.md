@@ -170,8 +170,8 @@ Entry `parts-of-speech/index.html` -> `src/grammar.tsx` -> `src/components/gramm
 (home -> quiz -> result). Logic in `src/lib/grammar.ts`; it does not import the vocabulary data
 (so this page's bundle stays small).
 - **Home**: header "KCIS Grade 1" / "Parts of Speech" + menu; under the title a small
-  **Example** card showing an answered question ("Tap all the nouns." + "The cat eats fish." with
-  *cat* and *fish* green — short, so it fits one line on a phone), so everyone sees the question type; then
+  **Example** card showing an answered question ("Tap all the nouns." + "Tom reads a book." with
+  *Tom* and *book* green — short, so it fits one line on a phone), so everyone sees the question type; then
   1. **How many questions?** — 5 / 10 / 20 / 30 (default 10).
   2. **Word Kinds** — checkboxes Noun / Verb / Adjective / Article (each with example words,
      e.g. "dog, park, Tom"), Select all / Clear. **Default: all four.** At least one must be

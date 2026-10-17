@@ -43,11 +43,12 @@ for (const [word, pos] of Object.entries(partsOfSpeech)) {
   if (!VALID_POS.has(pos)) errors.push(`partsOfSpeech: "${word}" has invalid value "${pos}"`)
 }
 const seenPictures = new Map<string, string>()
-for (const [word, emoji] of Object.entries(pictures)) {
+for (const [word, svg] of Object.entries(pictures)) {
   if (!words.has(word)) errors.push(`pictures: "${word}" is not in the vocabulary`)
-  const other = seenPictures.get(emoji)
-  if (other) errors.push(`pictures: "${word}" and "${other}" share the same picture ${emoji}`)
-  seenPictures.set(emoji, word)
+  if (!svg.trim().startsWith('<')) errors.push(`pictures: "${word}" is not SVG markup`)
+  const other = seenPictures.get(svg)
+  if (other) errors.push(`pictures: "${word}" and "${other}" share the same picture`)
+  seenPictures.set(svg, word)
 }
 
 for (const word of Object.keys(sentences)) {

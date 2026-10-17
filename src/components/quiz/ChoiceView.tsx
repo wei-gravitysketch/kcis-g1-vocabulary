@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { POS_LABELS, partsOfSpeech, type PartOfSpeech } from '../../data/partsOfSpeech'
 import type { ChoiceQuestion } from '../../lib/session'
 import { speak } from '../../lib/speak'
+import Picture from '../Picture'
 import SpeakButton from '../SpeakButton'
 import type { OnAnswer } from './types'
 
@@ -28,7 +29,7 @@ function Prompt({ q, answered }: { q: ChoiceQuestion; answered: boolean }) {
       return (
         <Card>
           <Ask>What is this?</Ask>
-          <span className="text-[7rem] leading-none">{q.picture}</span>
+          <Picture svg={q.picture!} />
         </Card>
       )
     case 'trueFalse':
@@ -36,7 +37,7 @@ function Prompt({ q, answered }: { q: ChoiceQuestion; answered: boolean }) {
         <Card>
           {q.picture ? (
             <>
-              <span className="text-[7rem] leading-none">{q.picture}</span>
+              <Picture svg={q.picture} />
               <p className="text-2xl font-bold text-slate-800">
                 Is this <span className="text-sky-700">“{q.shown}”</span>?
               </p>

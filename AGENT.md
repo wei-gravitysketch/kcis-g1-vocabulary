@@ -46,11 +46,11 @@ Three-level hierarchy; the **names of every level are free-form strings**:
   the bank can be extended freely (more sentences per word are fine). Avoid putting
   "a/an" directly before the target word when avoidable (it leaks/contradicts the
   answer), and make the sentence have a clear single answer.
-- `src/data/pictures.ts` — `Record<string, string>` (word -> simple SVG drawing: markup in a
-  100 x 100 box, drawn by `src/components/Picture.tsx` with a default dark round outline), used
-  by the Picture and True-or-false questions (not flashcards). Hand-drawn flat shapes, no image
-  files (emoji were often imprecise). Only words that one simple picture shows clearly; abstract
-  words (help, visualize, maybe, ...) are never asked with a picture. Pictures must be unique.
+- `src/data/pictures.ts` — `Record<string, string>` (word -> PNG path in `public/pictures/`), used
+  by the Picture and True-or-false questions (not flashcards). Use clear, cheerful, flat educational
+  illustrations with one obvious subject; no visible text. Only words that one simple picture shows
+  clearly; abstract words (help, visualize, maybe, ...) are never asked with a picture. Pictures
+  must be unique.
 - `src/data/grammarSentences.ts` — the Parts of Speech sentence bank (`string[]`, >= 200).
   Each noun / verb / adjective / article carries a tag after a slash:
   `'The/art big/adj dog/n runs/v in the/art park/n.'` (`n`, `v`, `adj`, `art`). Untagged words
@@ -62,7 +62,7 @@ Three-level hierarchy; the **names of every level are free-form strings**:
   (Tom, Mom, Grandma) are nouns. Mix the answer counts (one or several of a kind).
 - `scripts/validate-data.ts` (`npm run validate`) enforces: every vocabulary word has
   >= 10 unique sentences that contain the word; POS values are valid; ids unique; picture
-  words exist, pictures are SVG markup and unique. For the grammar bank: >= 200 unique sentences that
+  words exist, picture PNG files exist and are unique. For the grammar bank: >= 200 unique sentences that
   parse; capital + end punctuation; a noun and a verb in each; untagged words only from its
   `OTHER_WORDS` list (in, on, and, ...); a word is tagged the same way in every sentence;
   a/an/the are always (and only) articles; "a"/"an" agree with the next word.

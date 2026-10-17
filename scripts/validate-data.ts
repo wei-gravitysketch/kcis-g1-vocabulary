@@ -5,6 +5,8 @@ import { sentences } from '../src/data/sentences'
 import { pictures } from '../src/data/pictures'
 import { grammarSentences } from '../src/data/grammarSentences'
 import { parseSentence, type TaggedSentence, type WordKind } from '../src/lib/grammar'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 const MIN_SENTENCES = 10
 const VALID_POS = new Set<string>(['noun', 'verb', 'adj', 'adv'])
@@ -43,12 +45,13 @@ for (const [word, pos] of Object.entries(partsOfSpeech)) {
   if (!VALID_POS.has(pos)) errors.push(`partsOfSpeech: "${word}" has invalid value "${pos}"`)
 }
 const seenPictures = new Map<string, string>()
-for (const [word, svg] of Object.entries(pictures)) {
+for (const [word, picture] of Object.entries(pictures)) {
   if (!words.has(word)) errors.push(`pictures: "${word}" is not in the vocabulary`)
-  if (!svg.trim().startsWith('<')) errors.push(`pictures: "${word}" is not SVG markup`)
-  const other = seenPictures.get(svg)
+  if (!/^\/pictures\/[a-z]+\.png$/.test(picture)) errors.push(`pictures: "${word}" is not a PNG path`)
+  if (!existsSync(resolve('public', picture.slice(1)))) errors.push(`pictures: "${word}" image does not exist: ${picture}`)
+  const other = seenPictures.get(picture)
   if (other) errors.push(`pictures: "${word}" and "${other}" share the same picture`)
-  seenPictures.set(svg, word)
+  seenPictures.set(picture, word)
 }
 
 for (const word of Object.keys(sentences)) {

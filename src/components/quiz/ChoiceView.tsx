@@ -29,7 +29,7 @@ function Prompt({ q, answered }: { q: ChoiceQuestion; answered: boolean }) {
       return (
         <Card>
           <Ask>What is this?</Ask>
-          <Picture svg={q.picture!} />
+          <Picture src={q.picture!} />
         </Card>
       )
     case 'trueFalse':
@@ -37,7 +37,7 @@ function Prompt({ q, answered }: { q: ChoiceQuestion; answered: boolean }) {
         <Card>
           {q.picture ? (
             <>
-              <Picture svg={q.picture} />
+              <Picture src={q.picture} />
               <p className="text-2xl font-bold text-slate-800">
                 Is this <span className="text-sky-700">“{q.shown}”</span>?
               </p>

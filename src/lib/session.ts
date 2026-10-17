@@ -29,7 +29,7 @@ export interface ChoiceQuestion {
   /** blank: the full sentence and the blanked prompt. */
   sentence?: string
   prompt?: string
-  /** picture / trueFalse (picture variant): the picture (SVG markup) to show. */
+  /** picture / trueFalse (picture variant): the PNG path to show. */
   picture?: string
   /** trueFalse: the word shown to the child (the target word, or a different one). */
   shown?: string

@@ -75,13 +75,14 @@ const question = (id: number, kind: WordKind): GrammarQuestion => {
 }
 
 /**
- * `count` questions on different sentences. The kinds take turns (all four in random order,
- * then again) so every test mixes nouns, verbs, adjectives and articles evenly.
+ * `count` questions on different sentences, asking only for the chosen `kinds`. The kinds take
+ * turns (all chosen kinds in random order, then again) so a test mixes them evenly.
  */
-export function buildGrammarQuestions(count: number): GrammarQuestion[] {
+export function buildGrammarQuestions(count: number, chosen: readonly WordKind[] = WORD_KINDS): GrammarQuestion[] {
+  if (chosen.length === 0) return []
   const kinds: WordKind[] = []
   while (kinds.length < count) {
-    let round = shuffle(WORD_KINDS)
+    let round = shuffle(chosen)
     if (round[0] === kinds.at(-1)) round = round.reverse()
     kinds.push(...round)
   }

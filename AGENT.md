@@ -157,18 +157,22 @@ home-screen app name "G1 Vocabulary").
 Entry `parts-of-speech/index.html` -> `src/grammar.tsx` -> `src/components/grammar/GrammarApp.tsx`
 (home -> quiz -> result). Logic in `src/lib/grammar.ts`; it does not import the vocabulary data
 (so this page's bundle stays small).
-- **Home**: header "KCIS Grade 1" / "Parts of Speech" + menu; one section **How many
-  questions?** — 5 / 10 / 20 / 30 (default 10, remembered in `localStorage`); one line saying
-  what the test is; Start button.
+- **Home**: header "KCIS Grade 1" / "Parts of Speech" + menu, then
+  1. **How many questions?** — 5 / 10 / 20 / 30 (default 10).
+  2. **Word Kinds** — checkboxes Noun / Verb / Adjective / Article (each with example words,
+     e.g. "dog, park, Tom"), Select all / Clear. **Default: all four.** At least one must be
+     checked (otherwise Start says "Pick at least one word kind.").
+
+  Start button. The settings are remembered in `localStorage`.
 - **Question** (`SentenceView.tsx`): "Tap all the nouns." (or verbs / adjectives / articles) and
   the sentence as big word chips (🔊 reads the sentence). The child toggles words, then taps
   **Check** (bottom right, where Next appears afterwards). One or several words may be right;
   **nothing tells how many** (same wording every time). Correct only if the picked set equals
   the answer set exactly. After checking: right picks green, missed answers green dashed, wrong
   picks red struck through; wrong answers show "Answer: dog, park".
-- **Building a test**: each question uses a different sentence; the kinds take turns (all four
-  in random order, then again) so a test mixes them evenly; a sentence is only asked for a kind
-  it contains.
+- **Building a test**: only the checked kinds are asked; each question uses a different
+  sentence; the checked kinds take turns (all of them in random order, then again) so a test
+  mixes them evenly; a sentence is only asked for a kind it contains.
 - Same answer scenes, praise, sounds and progress bar as the vocabulary quiz (shared `Quiz`).
 - **Result**: shared `Result` screen (Blankie Bear on 100%), "Sentences to practice" lists the
   missed sentences with their kind and the answer words marked; *Retry missed* re-asks them.

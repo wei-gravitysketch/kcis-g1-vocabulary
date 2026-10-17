@@ -57,6 +57,6 @@ export default function GrammarApp() {
       )
     }
     default:
-      return <GrammarHome onStart={(count) => start(buildGrammarQuestions(count))} />
+      return <GrammarHome onStart={({ count, kinds }) => start(buildGrammarQuestions(count, kinds))} />
   }
 }

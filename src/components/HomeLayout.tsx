@@ -109,3 +109,39 @@ export function Segmented<T extends string | number>({
     </div>
   )
 }
+
+export function Check({
+  checked,
+  onChange,
+  title,
+  hint,
+}: {
+  checked: boolean
+  onChange: () => void
+  title: string
+  hint: string
+}) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      onClick={onChange}
+      className={`flex min-h-16 w-full items-center gap-4 rounded-2xl border-2 px-4 py-3 text-left transition ${
+        checked ? 'border-sky-500 bg-sky-50' : 'border-slate-200 bg-white'
+      }`}
+    >
+      <span
+        className={`grid size-7 shrink-0 place-items-center rounded-lg border-2 text-white ${
+          checked ? 'border-sky-600 bg-sky-600' : 'border-slate-300'
+        }`}
+      >
+        {checked && '✓'}
+      </span>
+      <span>
+        <span className="block text-lg font-semibold text-slate-800">{title}</span>
+        <span className="block text-sm text-slate-500">{hint}</span>
+      </span>
+    </button>
+  )
+}

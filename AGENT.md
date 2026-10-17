@@ -143,7 +143,12 @@ home-screen app name "G1 Vocabulary").
   *Back to card* returns. Not scored; moving to another card leaves the challenge.
 - **Quiz**: one question per word (a Match question covers several words), progress
   indicator, immediate right/wrong feedback (show the correct answer). The Next button sits
-  directly under the question, right-aligned (not pinned to the bottom). Views:
+  directly under the question, right-aligned (not pinned to the bottom).
+  **Auto next**: after a *correct* answer the quiz moves on by itself after 3 s; the countdown
+  shows inside the Next button (a number badge + the button background draining). Next still
+  works at any time. After a *wrong* answer there is no countdown (time to read the answer).
+  A small **Auto next** switch under the Next button turns it off/on (default on, remembered in
+  `localStorage` `quiz-auto-next`, shared by both tests). Views:
   `src/components/quiz/` (`ChoiceView`, `SpellView`, `MatchView`) report an `Outcome` to
   `Quiz.tsx`, which plays the scene and shows feedback. `Quiz.tsx` is generic (any question
   type, drawn by a `renderQuestion` prop) and shared with the Parts of Speech test. Final

@@ -293,3 +293,10 @@ button:disabled {
 @media (prefers-reduced-motion: reduce) {
   .anim-pop-in { animation: none; }
 }
+
+/* Auto-next countdown inside the Next button (Quiz). */
+.anim-countdown { animation: anim-countdown 3s linear forwards; }
+@keyframes anim-countdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}

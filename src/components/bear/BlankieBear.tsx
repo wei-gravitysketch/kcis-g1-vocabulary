@@ -314,8 +314,7 @@ export default function BlankieBear() {
           <ellipse cx="465" cy="190" rx="14" ry="5.5" transform="rotate(5 465 190)" fill={INK} stroke="none" />
           <path d={HEAD.nose} fill={WHITE} strokeWidth="5" />
           <path d={HEAD.noseLine} fill="none" strokeWidth="5" />
-          <path d={HEAD.mouthLeft} fill="none" strokeWidth="6.5" />
-          <path d={HEAD.mouthRight} fill="none" strokeWidth="4" />
+          <path d={HEAD.mouth} fill="none" strokeWidth="5.5" />
         </g>
       </svg>
     </div>

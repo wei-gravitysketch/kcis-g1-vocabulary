@@ -197,12 +197,13 @@ Entry `parts-of-speech/index.html` -> `src/grammar.tsx` -> `src/components/gramm
 
 ## Blankie Bear (被被熊) — reward for a perfect quiz
 When a quiz (either test) ends at **100%**, Blankie Bear appears on the result screen: a bear head (white,
-blue ears, small grumpy face) on a blue-and-white striped blanket. It must look **exactly like
+blue ears, small face with a slight smile) on a blue-and-white striped blanket. It must look **exactly like
 the owner's drawing**: `bear/bearShape.ts` is a tracing of that drawing in its own pixel space
 (head, ears, face, the 3-cornered blanket, the 7 stripe lines that stop short of the edges, and
 the blue bands where they were colored), fitted to the original ink to within ~1-2 px. Only the
 line quality (clean round strokes) and coloring (soft colored-pencil pattern leaning right, like
-the original strokes) are improved. Do not restyle the shapes.
+the original strokes) are improved. Do not restyle the shapes. One deliberate change: the
+mouth is a single soft, slight smile (the drawing's mouth looked sad); keep it subtle.
 - Flies around the screen until the result screen is left (wander toward random targets,
   gentle bob, tilts with motion). Enters by shooting up from the bottom.
 - The blanket ripples while flying: every blanket point is displaced per frame (more the

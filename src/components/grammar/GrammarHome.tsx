@@ -30,8 +30,8 @@ const EXAMPLE_KIND: WordKind = 'noun'
 function Example() {
   const { tokens, end } = EXAMPLE
   return (
-    <div className="rounded-3xl bg-amber-100 px-4 py-3 text-center ring-2 ring-amber-300">
-      <p className="text-xs font-bold tracking-widest text-amber-700 uppercase">Example</p>
+    <div className="rounded-3xl border-2 border-dashed border-sky-400 bg-white px-4 py-3 text-center">
+      <p className="text-xs font-bold tracking-widest text-sky-600 uppercase">Example</p>
       <p className="mt-1 text-lg font-bold text-slate-700">
         Tap all the <span className="text-sky-700">{KIND_LABELS[EXAMPLE_KIND].many}</span>.
       </p>
